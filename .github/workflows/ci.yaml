@@ -77,28 +77,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      # - name: Download workspace
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: zephyr-workspace
+      - name: Download workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: zephyr-workspace
       
-      # - name: Extract workspace
-      #   run: |
-      #     tar -xzf zephyr_workspace.tar.gz
+      - name: Extract workspace
+        run: |
+          tar -xzf zephyr_workspace.tar.gz
       
-      # - name: Build for native_sim
-      #   run: |
-      #     cd leds
-      #     west build -b native_sim -- \
-      #       -DEXTRA_CONF_FILE=sim.prj.conf
+      - name: Modify CMake file
+        run: |
+          cd leds
+          echo 'include(${CMAKE_SOURCE_DIR}/testing.cmake)' >> CMakeLists.txt
+      
+      - name: Build for native_sim
+        run: |
+          cd leds
+          west build -b native_sim -- \
+            -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
+            -DEXTRA_CONF_FILE=sim.prj.conf
       
       # - name: Build tests for native_sim
       #   run: |
       #     cd leds
       #     west build -b native_sim --build-dir=build_test -- \
       #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-      #       -DEXTRA_CONF_FILE=test.prj.conf \
-      #       -DTEST_BUILD=ON
+      #       -DEXTRA_CONF_FILE=sim.prj.conf \
+      #       -DTEST_BUILD=ON \
+      #       -DTEST_FILE=led_test.c
       
       # - name: Run unit tests
       #   run: |
@@ -152,7 +159,7 @@ jobs:
       #     cd buttons
       #     west build -b native_sim --build-dir=build_test -- \
       #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-      #       -DEXTRA_CONF_FILE=test.prj.conf \
+      #       -DEXTRA_CONF_FILE=sim.prj.conf \
       #       -DTEST_BUILD=ON
       
       # - name: Run unit tests
@@ -207,7 +214,7 @@ jobs:
       #     cd events
       #     west build -b native_sim --build-dir=build_test -- \
       #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-      #       -DEXTRA_CONF_FILE=test.prj.conf \
+      #       -DEXTRA_CONF_FILE=sim.prj.conf \
       #       -DTEST_BUILD=ON
       
       # - name: Run unit tests
@@ -262,7 +269,7 @@ jobs:
       #     cd smf
       #     west build -b native_sim --build-dir=build_test -- \
       #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-      #       -DEXTRA_CONF_FILE=test.prj.conf \
+      #       -DEXTRA_CONF_FILE=sim.prj.conf \
       #       -DTEST_BUILD=ON
       
       # - name: Run unit tests
@@ -317,7 +324,7 @@ jobs:
       #     cd adc
       #     west build -b native_sim --build-dir=build_test -- \
       #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-      #       -DEXTRA_CONF_FILE=test.prj.conf \
+      #       -DEXTRA_CONF_FILE=sim.prj.conf \
       #       -DTEST_BUILD=ON
       
       # - name: Run unit tests

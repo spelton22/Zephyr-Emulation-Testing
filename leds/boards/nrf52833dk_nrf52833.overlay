@@ -1,0 +1,9 @@
+/ {
+    aliases {
+        // add your aliases here; examples:
+        blinking = &led0;  // this corresponds to LED1 on the board
+        // ivpump = &led1;
+        // buzzer = &led2;
+        // error = &led3;
+    };
+};
