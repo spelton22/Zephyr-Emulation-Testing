@@ -68,7 +68,7 @@ jobs:
   
   led_tests:
     needs: [changes, zephyr_setup]
-    if: needs.changes.outputs.led == 'true'
+    if: needs.changes.outputs.leds == 'true'
     runs-on: ubuntu-latest
     container:
       image: hardwario/nrf-connect-sdk-build:v2.9.0-1
