@@ -1,0 +1,342 @@
+name: Zephyr CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      leds: ${{ steps.filter.outputs.leds }}
+      buttons: ${{ steps.filter.outputs.buttons }}
+      events: ${{ steps.filter.outputs.events }}
+      smf: ${{ steps.filter.outputs.smf }}
+      adc: ${{ steps.filter.outputs.adc }}
+      any: ${{ steps.filter.outputs.leds == 'true' ||
+               steps.filter.outputs.buttons == 'true' ||
+               steps.filter.outputs.events == 'true' ||
+               steps.filter.outputs.smf == 'true' ||
+               steps.filter.outputs.adc == 'true' ||
+            }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            leds:
+              - 'leds/**'
+            buttons:
+              - 'buttons/**'
+            events:
+              - 'events/**'
+            smf:
+              - 'smf/**'
+            adc:
+              - 'adc/**'
+  
+  zephyr_setup:
+    needs: changes
+    if: needs.changes.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: hardwario/nrf-connect-sdk-build:v2.9.0-1
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: West init
+        run: |
+          west init -m https://github.com/zephyrproject-rtos/zephyr --mr v3.7.0
+          west update -o=--depth=1 -n
+      
+      - name: Archive workspace
+        run: |
+          tar -czf zephyr_workspace.tar.gz .west zephyr modules
+      
+      - name: Upload workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: zephyr-workspace
+          path: zephyr_workspace.tar.gz
+  
+  led_tests:
+    needs: [changes, zephyr_setup]
+    if: needs.changes.outputs.led == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: hardwario/nrf-connect-sdk-build:v2.9.0-1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # - name: Download workspace
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: zephyr-workspace
+      
+      # - name: Extract workspace
+      #   run: |
+      #     tar -xzf zephyr_workspace.tar.gz
+      
+      # - name: Build for native_sim
+      #   run: |
+      #     cd leds
+      #     west build -b native_sim -- \
+      #       -DEXTRA_CONF_FILE=sim.prj.conf
+      
+      # - name: Build tests for native_sim
+      #   run: |
+      #     cd leds
+      #     west build -b native_sim --build-dir=build_test -- \
+      #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
+      #       -DEXTRA_CONF_FILE=test.prj.conf \
+      #       -DTEST_BUILD=ON
+      
+      # - name: Run unit tests
+      #   run: |
+      #     cd leds
+      #     chmod +x build_test/zephyr/zephyr.exe
+      #     build_test/zephyr/zephyr.exe | tee test_output.log
+          
+      # - name: Check test results
+      #   run: |
+      #     cd leds
+      #     cat test_output.log
+      #     if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
+      #       echo "All tests passed!"
+      #       exit 0
+      #     elif grep -q "PROJECT EXECUTION FAILED" test_output.log; then
+      #       echo "Tests failed!"
+      #       exit 1
+      #     else
+      #       echo "Could not determine test status"
+      #       exit 1
+      #     fi
+  
+  button_tests:
+    needs: [changes, zephyr_setup]
+    if: needs.changes.outputs.buttons == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: hardwario/nrf-connect-sdk-build:v2.9.0-1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # - name: Download workspace
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: zephyr-workspace
+      
+      # - name: Extract workspace
+      #   run: |
+      #     tar -xzf zephyr_workspace.tar.gz
+      
+      # - name: Build for native_sim
+      #   run: |
+      #     cd buttons
+      #     west build -b native_sim -- \
+      #       -DEXTRA_CONF_FILE=sim.prj.conf
+      
+      # - name: Build tests for native_sim
+      #   run: |
+      #     cd buttons
+      #     west build -b native_sim --build-dir=build_test -- \
+      #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
+      #       -DEXTRA_CONF_FILE=test.prj.conf \
+      #       -DTEST_BUILD=ON
+      
+      # - name: Run unit tests
+      #   run: |
+      #     cd buttons
+      #     chmod +x build_test/zephyr/zephyr.exe
+      #     build_test/zephyr/zephyr.exe | tee test_output.log
+          
+      # - name: Check test results
+      #   run: |
+      #     cd buttons
+      #     cat test_output.log
+      #     if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
+      #       echo "All tests passed!"
+      #       exit 0
+      #     elif grep -q "PROJECT EXECUTION FAILED" test_output.log; then
+      #       echo "Tests failed!"
+      #       exit 1
+      #     else
+      #       echo "Could not determine test status"
+      #       exit 1
+      #     fi
+  
+  events_tests:
+    needs: [changes, zephyr_setup]
+    if: needs.changes.outputs.events == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: hardwario/nrf-connect-sdk-build:v2.9.0-1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # - name: Download workspace
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: zephyr-workspace
+      
+      # - name: Extract workspace
+      #   run: |
+      #     tar -xzf zephyr_workspace.tar.gz
+      
+      # - name: Build for native_sim
+      #   run: |
+      #     cd events
+      #     west build -b native_sim -- \
+      #       -DEXTRA_CONF_FILE=sim.prj.conf
+      
+      # - name: Build tests for native_sim
+      #   run: |
+      #     cd events
+      #     west build -b native_sim --build-dir=build_test -- \
+      #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
+      #       -DEXTRA_CONF_FILE=test.prj.conf \
+      #       -DTEST_BUILD=ON
+      
+      # - name: Run unit tests
+      #   run: |
+      #     cd events
+      #     chmod +x build_test/zephyr/zephyr.exe
+      #     build_test/zephyr/zephyr.exe | tee test_output.log
+          
+      # - name: Check test results
+      #   run: |
+      #     cd events
+      #     cat test_output.log
+      #     if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
+      #       echo "All tests passed!"
+      #       exit 0
+      #     elif grep -q "PROJECT EXECUTION FAILED" test_output.log; then
+      #       echo "Tests failed!"
+      #       exit 1
+      #     else
+      #       echo "Could not determine test status"
+      #       exit 1
+      #     fi
+  
+  smf_tests:
+    needs: [changes, zephyr_setup]
+    if: needs.changes.outputs.smf == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: hardwario/nrf-connect-sdk-build:v2.9.0-1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # - name: Download workspace
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: zephyr-workspace
+      
+      # - name: Extract workspace
+      #   run: |
+      #     tar -xzf zephyr_workspace.tar.gz
+      
+      # - name: Build for native_sim
+      #   run: |
+      #     cd smf
+      #     west build -b native_sim -- \
+      #       -DEXTRA_CONF_FILE=sim.prj.conf
+      
+      # - name: Build tests for native_sim
+      #   run: |
+      #     cd smf
+      #     west build -b native_sim --build-dir=build_test -- \
+      #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
+      #       -DEXTRA_CONF_FILE=test.prj.conf \
+      #       -DTEST_BUILD=ON
+      
+      # - name: Run unit tests
+      #   run: |
+      #     cd smf
+      #     chmod +x build_test/zephyr/zephyr.exe
+      #     build_test/zephyr/zephyr.exe | tee test_output.log
+          
+      # - name: Check test results
+      #   run: |
+      #     cd smf
+      #     cat test_output.log
+      #     if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
+      #       echo "All tests passed!"
+      #       exit 0
+      #     elif grep -q "PROJECT EXECUTION FAILED" test_output.log; then
+      #       echo "Tests failed!"
+      #       exit 1
+      #     else
+      #       echo "Could not determine test status"
+      #       exit 1
+      #     fi
+  
+  adc_tests:
+    needs: [changes, zephyr_setup]
+    if: needs.changes.outputs.adc == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: hardwario/nrf-connect-sdk-build:v2.9.0-1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # - name: Download workspace
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: zephyr-workspace
+      
+      # - name: Extract workspace
+      #   run: |
+      #     tar -xzf zephyr_workspace.tar.gz
+      
+      # - name: Build for native_sim
+      #   run: |
+      #     cd adc
+      #     west build -b native_sim -- \
+      #       -DEXTRA_CONF_FILE=sim.prj.conf
+      
+      # - name: Build tests for native_sim
+      #   run: |
+      #     cd adc
+      #     west build -b native_sim --build-dir=build_test -- \
+      #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
+      #       -DEXTRA_CONF_FILE=test.prj.conf \
+      #       -DTEST_BUILD=ON
+      
+      # - name: Run unit tests
+      #   run: |
+      #     cd adc
+      #     chmod +x build_test/zephyr/zephyr.exe
+      #     build_test/zephyr/zephyr.exe | tee test_output.log
+          
+      # - name: Check test results
+      #   run: |
+      #     cd adc
+      #     cat test_output.log
+      #     if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
+      #       echo "All tests passed!"
+      #       exit 0
+      #     elif grep -q "PROJECT EXECUTION FAILED" test_output.log; then
+      #       echo "Tests failed!"
+      #       exit 1
+      #     else
+      #       echo "Could not determine test status"
+      #       exit 1
+      #     fi
