@@ -96,14 +96,14 @@ jobs:
           cd leds
           west build -b native_sim -- \
             -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-            -DEXTRA_CONF_FILE=sim.prj.conf
+            -DEXTRA_CONF_FILE=${CMAKE_SOURCE_DIR}/sim.prj.conf
       
       # - name: Build tests for native_sim
       #   run: |
       #     cd leds
       #     west build -b native_sim --build-dir=build_test -- \
       #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-      #       -DEXTRA_CONF_FILE=sim.prj.conf \
+      #       -DEXTRA_CONF_FILE=${CMAKE_SOURCE_DIR}/sim.prj.conf \
       #       -DTEST_BUILD=ON \
       #       -DTEST_FILE=led_test.c
       
