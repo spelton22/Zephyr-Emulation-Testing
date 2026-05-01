@@ -65,16 +65,13 @@ ZTEST(button_press_tests, test_main_responds_to_first_press)
   
   k_msleep(50);
   
-  /* Verify main is waiting (LED should not have changed yet) */
   zassert_equal(LED_STATE, initial_state, "LED should not change before button press");
   
   /* Simulate button press */
   button_test_callback(NULL, NULL, BIT(0));
   
-  /* Give main() time to process the event */
   k_msleep(100);
   
-  /* Verify LED_STATE toggled */
   zassert_not_equal(LED_STATE, initial_state,
                     "LED_STATE should toggle after button press (was %d, now %d)",
                     initial_state, LED_STATE);
