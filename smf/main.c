@@ -8,16 +8,16 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_INF);
 
 /* ---------------- GPIO ---------------- */
 
-static const struct gpio_dt_spec led_left  = GPIO_DT_SPEC_GET(DT_ALIAS(ledtest0), gpios);
-static const struct gpio_dt_spec led_right = GPIO_DT_SPEC_GET(DT_ALIAS(ledtest1), gpios);
+const struct gpio_dt_spec led_left  = GPIO_DT_SPEC_GET(DT_ALIAS(ledtest0), gpios);
+const struct gpio_dt_spec led_right = GPIO_DT_SPEC_GET(DT_ALIAS(ledtest1), gpios);
 
-static const struct gpio_dt_spec btn_left  = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest0), gpios);
-static const struct gpio_dt_spec btn_right = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest1), gpios);
-static const struct gpio_dt_spec btn_stop  = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest2), gpios);
+const struct gpio_dt_spec btn_left  = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest0), gpios);
+const struct gpio_dt_spec btn_right = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest1), gpios);
+const struct gpio_dt_spec btn_stop  = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest2), gpios);
 
 /* ---------------- Unified event bus ---------------- */
 
-static struct k_event program_events;
+struct k_event program_events;
 
 /* Input events */
 #define EVT_SELECT_LEFT   BIT(0)
@@ -42,24 +42,24 @@ struct app_ctx {
     struct smf_ctx ctx;
 };
 
-static struct app_ctx s_ctx;
+struct app_ctx s_ctx;
 
 /* Forward declaration */
 static const struct smf_state states[];
 
 /* ---------------- ISR callbacks ---------------- */
 
-static void btn_left_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+void btn_left_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
     k_event_set(&program_events, EVT_SELECT_LEFT);
 }
 
-static void btn_right_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+void btn_right_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
     k_event_set(&program_events, EVT_SELECT_RIGHT);
 }
 
-static void btn_stop_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+void btn_stop_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
     k_event_set(&program_events, EVT_STOP);
 }
@@ -68,7 +68,7 @@ static struct gpio_callback cb_left, cb_right, cb_stop;
 
 /* ---------------- STATE: INIT ---------------- */
 
-static void state_init_run(void *o)
+void state_init_run(void *o)
 {
     k_event_init(&program_events);
 
@@ -96,7 +96,7 @@ static void state_init_run(void *o)
 
 /* ---------------- STATE: IDLE ---------------- */
 
-static void state_idle_entry(void *o)
+void state_idle_entry(void *o)
 {
     ARG_UNUSED(o);
     k_event_set(&program_events, EVT_ENTER_IDLE);
@@ -105,7 +105,7 @@ static void state_idle_entry(void *o)
     gpio_pin_set_dt(&led_right, 0);
 }
 
-static void state_idle_run(void *o)
+void state_idle_run(void *o)
 {
     uint32_t ev = k_event_wait(&program_events,
                                EVT_SELECT_LEFT | EVT_SELECT_RIGHT,
@@ -121,7 +121,7 @@ static void state_idle_run(void *o)
 
 /* ---------------- STATE: BLINK LEFT ---------------- */
 
-static void state_blink_left_entry(void *o)
+void state_blink_left_entry(void *o)
 {
     ARG_UNUSED(o);
     k_event_set(&program_events, EVT_ENTER_BLINK_LEFT);
@@ -129,7 +129,7 @@ static void state_blink_left_entry(void *o)
     gpio_pin_set_dt(&led_right, 0);
 }
 
-static void state_blink_left_run(void *o)
+void state_blink_left_run(void *o)
 {
     static bool toggle;
     toggle = !toggle;
@@ -150,7 +150,7 @@ static void state_blink_left_run(void *o)
 
 /* ---------------- STATE: BLINK RIGHT ---------------- */
 
-static void state_blink_right_entry(void *o)
+void state_blink_right_entry(void *o)
 {
     ARG_UNUSED(o);
     k_event_set(&program_events, EVT_ENTER_BLINK_RIGHT);
@@ -158,7 +158,7 @@ static void state_blink_right_entry(void *o)
     gpio_pin_set_dt(&led_left, 0);
 }
 
-static void state_blink_right_run(void *o)
+void state_blink_right_run(void *o)
 {
     static bool toggle;
     toggle = !toggle;
@@ -176,15 +176,6 @@ static void state_blink_right_run(void *o)
         smf_set_state(SMF_CTX(&s_ctx.ctx), &states[IDLE]);
     }
 }
-
-/* ---------------- State table ---------------- */
-
-static const struct smf_state states[] = {
-    [INIT]        = SMF_CREATE_STATE(NULL, state_init_run, NULL, NULL, NULL),
-    [IDLE]        = SMF_CREATE_STATE(state_idle_entry, state_idle_run, NULL, NULL, NULL),
-    [BLINK_LEFT]  = SMF_CREATE_STATE(state_blink_left_entry, state_blink_left_run, NULL, NULL, NULL),
-    [BLINK_RIGHT] = SMF_CREATE_STATE(state_blink_right_entry, state_blink_right_run, NULL, NULL, NULL),
-};
 
 /* ---------------- MAIN ---------------- */
 

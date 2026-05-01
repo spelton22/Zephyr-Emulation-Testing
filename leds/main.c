@@ -10,7 +10,7 @@
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   500
 
-static const struct gpio_dt_spec blinker = GPIO_DT_SPEC_GET(DT_ALIAS(blinking), gpios);
+const struct gpio_dt_spec blinker = GPIO_DT_SPEC_GET(DT_ALIAS(blinking), gpios);
 
 int main(void)
 {

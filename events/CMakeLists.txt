@@ -7,6 +7,6 @@ target_sources(app PRIVATE main.c)
 
 # if(DEFINED TEST_BUILD AND TEST_BUILD)
     target_compile_definitions(app PRIVATE "main=student_main")
-    target_sources(app PRIVATE events_tests.c)
+    target_sources(app PRIVATE events_test.c)
     target_sources(app PRIVATE zephyr_events_test_lib.c)
 # endif()

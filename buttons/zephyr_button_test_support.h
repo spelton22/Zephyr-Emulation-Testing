@@ -19,4 +19,9 @@ extern int LED_STATE;
 
 #define BUTTON_EVENT BIT(0)
 
+extern k_thread_stack_t student_main_stack;
+extern struct k_thread student_main_thread;
+extern k_tid_t student_main_tid;
+extern volatile bool main_is_running;
+
 #endif

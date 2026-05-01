@@ -18,14 +18,14 @@ int LED_STATE = LED_OFF;
 K_EVENT_DEFINE(button_events);
 #define BUTTON_EVENT BIT(0)
 
-static const struct gpio_dt_spec led_test = GPIO_DT_SPEC_GET(DT_ALIAS(ledtest), gpios);
-static const struct gpio_dt_spec button_test = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest), gpios);
+const struct gpio_dt_spec led_test = GPIO_DT_SPEC_GET(DT_ALIAS(ledtest), gpios);
+const struct gpio_dt_spec button_test = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest), gpios);
 
 static struct gpio_callback button_test_cb;  
 
 void button_test_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
 
-static int init(){
+int init(){
 
   k_event_init(&button_events);
 
