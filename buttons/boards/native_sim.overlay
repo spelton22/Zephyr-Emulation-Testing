@@ -1,0 +1,22 @@
+/ {
+    aliases {
+        buttontest = &test_button;
+        ledtest = &test_led;
+    };
+
+    test_button: button {
+        compatible = "gpio-keys";
+        button_0: button_0 {
+            gpios = <&gpio0 0 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+            label = "Test Button";
+        };
+    };
+
+    test_led: led {
+        compatible = "gpio-leds";
+        led_0: led_0 {
+            gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
+            label = "Test LED";
+        };
+    };
+};
