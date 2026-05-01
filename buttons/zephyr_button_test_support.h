@@ -11,4 +11,12 @@ void student_main_thread_entry(void *p1, void *p2, void *p3);
 void test_before(void *fixture);
 void test_after(void *fixture);
 
+extern struct k_event button_events;
+extern int LED_STATE;
+
+#define LED_ON 1
+#define LED_OFF 0
+
+#define BUTTON_EVENT BIT(0)
+
 #endif

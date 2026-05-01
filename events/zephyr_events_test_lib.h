@@ -50,4 +50,15 @@ static void assert_led_duty_cycle(const struct gpio_dt_spec *led,
                                   int expected_duty,
                                   int tolerance);
 
+struct duty_ctx {
+    const struct gpio_dt_spec *led;
+
+    int64_t last_ts;
+    bool last_state;
+
+    int64_t on_time;
+    int64_t total_time;
+};
+static struct duty_ctx ctx;
+
 #endif // EVENTS_TEST_H

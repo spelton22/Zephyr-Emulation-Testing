@@ -9,9 +9,9 @@ ZTEST(led_tests, test_led_toggles)
 {
     start_main(1000);
     
-    bool first = is_led_on(&led);
+    bool first = is_led_on(&blinker);
     k_msleep(1100);  // slightly more than period
-    bool second = is_led_on(&led);
+    bool second = is_led_on(&blinker);
 
     zassert_not_equal(first, second,
                       "LED did not toggle");
@@ -21,7 +21,7 @@ ZTEST(led_tests, test_blink_frequency)
 {
     start_main(1000);
     
-    assert_led_blink_freq(&led,
+    assert_led_blink_freq(&blinker,
                           4000,   /* observe for 4 seconds */
                           1,      /* expected 1 Hz */
                           1,      /* allow small tolerance */
@@ -33,7 +33,7 @@ ZTEST(led_tests, test_duty_cycle)
 {
     start_main(1000);
     
-    assert_led_duty_cycle(&led,
+    assert_led_duty_cycle(&blinker,
                           "blinking LED",
                           4000,   /* observation window */
                           50,     /* expected 50% */

@@ -5,6 +5,11 @@
 #include "button_test.h"
 #include "zephyr_button_test_support.h"
 
+/* Thread for running student's main code */
+#define STUDENT_MAIN_STACK_SIZE 1024
+#define STUDENT_MAIN_PRIORITY 5
+K_THREAD_STACK_DEFINE(student_main_stack, STUDENT_MAIN_STACK_SIZE);
+
 /**
  * @brief Test that callback posts BUTTON_EVENT when called
  */

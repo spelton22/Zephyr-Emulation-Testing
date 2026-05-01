@@ -4,6 +4,6 @@
 /* ------------------------------------------------------------------ */
 /*  Student GPIOs                                                     */
 /* ------------------------------------------------------------------ */
-extern const struct gpio_dt_spec blinking;
+extern const struct gpio_dt_spec blinker;
 
 #endif // LED_TEST_H

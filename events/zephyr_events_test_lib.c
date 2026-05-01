@@ -1,5 +1,7 @@
 #include "zephyr_events_test_lib.h"
 
+#include <zephyr/drivers/gpio/gpio_emul.h>
+
 K_EVENT_DEFINE(program_test_events);
 
 /* ------------------------------------------------------------------ */
@@ -9,14 +11,6 @@ K_EVENT_DEFINE(program_test_events);
 static void before(void *)
 {
     stop_main();  /* abort any leftover thread from the previous test */
-    
-    k_event_clear(&program_test_events, FREQ_UP_TEST_NOTICE);
-    k_event_clear(&program_test_events, FREQ_DOWN_TEST_NOTICE);
-    k_event_clear(&program_test_events, RESET_BTN_TEST_NOTICE);
-    k_event_clear(&program_test_events, SLEEP_BTN_TEST_NOTICE);
-    k_event_clear(&program_test_events, ERROR_TEST_NOTICE);
-    k_event_clear(&program_test_events, RESET_TEST_NOTICE);
-    k_event_clear(&program_test_events, SLEEP_TEST_NOTICE);
 }
 
 static void after(void *)
@@ -40,7 +34,6 @@ static void student_main_entry(void *, void *, void *)
 static void stop_main(void)
 {
     if (main_running) {
-        simulate_button_click(&reset_button);
         k_thread_abort(student_main_tid);
         k_msleep(20);
         main_running = false;
@@ -149,9 +142,6 @@ static void assert_led_duty_cycle(const struct gpio_dt_spec *led,
                                   int expected_duty,
                                   int tolerance)
 {
-    struct gpio_dt_spec *led = &blinker_led;
-    char *name = "blinker";
-    
     struct gpio_callback cb;
 
     ctx.led = led;

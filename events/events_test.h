@@ -5,7 +5,7 @@
 /*  Student GPIOs                                                     */
 /* ------------------------------------------------------------------ */
 extern const struct gpio_dt_spec button;
-extern const struct gpio_dt_spec led;
+extern const struct gpio_dt_spec blinking_led;
 
 extern struct k_event button_events;
 

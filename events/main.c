@@ -6,8 +6,8 @@
 #define LED_TOGGLE_MS 500
 
 // GPIOs
-const struct gpio_dt_spec button = GPIO_DT_SPEC_GET(DT_ALIAS(sleepbutton), gpios);
-const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(heartbeat), gpios);
+const struct gpio_dt_spec button = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest), gpios);
+const struct gpio_dt_spec blinking_led = GPIO_DT_SPEC_GET(DT_ALIAS(ledtest), gpios);
 
 /* Event object */
 K_EVENT_DEFINE(program_events);
@@ -33,7 +33,7 @@ void led_thread(void)
     while (1) {
         state = !state;
         
-        gpio_pin_set_dt(&led, state);
+        gpio_pin_set_dt(&blinking_led, state);
         
         if (state) {
             k_event_post(&program_events, EVENT_LED_ON);
@@ -54,7 +54,7 @@ K_THREAD_DEFINE(led_tid, 1024, led_thread, NULL, NULL, NULL,
 
 int main(void)
 {
-    if (!gpio_is_ready_dt(&led)) {
+    if (!gpio_is_ready_dt(&blinking_led)) {
         printk("LED not ready\n");
         return 0;
     }
@@ -64,7 +64,7 @@ int main(void)
     }
 
     /* Configure LED */
-    gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
+    gpio_pin_configure_dt(&blinking_led, GPIO_OUTPUT_INACTIVE);
 
     /* Configure button */
     gpio_pin_configure_dt(&button, GPIO_INPUT);
