@@ -1,0 +1,34 @@
+/ {
+    zephyr,user {
+      io-channels = <&adc 0>;
+    };
+    aliases {
+    // add your aliases here; examples:
+    led_0 = &led0;  // this corresponds to LED1 on the board
+    led_1 = &led1;
+    led_2 = &led2;
+    error = &led3;
+
+    button_0 = &button0;  // this corresponds to SW1 on the board
+    button_1 = &button1;
+    button_2 = &button2;
+    button_3 = &button3;
+    
+    vadc = &vadc;
+    };
+};
+
+&adc {
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    vadc: channel@0 {
+      reg = <0>;  // channel number
+      zephyr,reference = "ADC_REF_INTERNAL";  // voltage ref for SA (0.6 V)
+      zephyr,gain = "ADC_GAIN_1_5"; // gain factor to scale ref voltage (1/gain)
+      zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+      zephyr,input-positive = <NRF_SAADC_AIN0>; // P0.02
+      zephyr,resolution = <12>;  // bit depth
+    };
+    status = "okay"; // enable the ADC
+};
