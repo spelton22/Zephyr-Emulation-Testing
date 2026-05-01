@@ -1,0 +1,24 @@
+/ {
+    aliases {
+        // add your aliases here; examples:
+        buttontest = &sim_buttontest1;
+        ledtest = &sim_ledtest1;
+    };
+  
+    sim_leds {
+        compatible = "gpio-leds";
+        sim_ledtest1: led_10 {
+            gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+            label = "SIM_LEDTEST";
+        };
+    };
+  
+    sim_adc_keys {
+        compatible = "gpio-keys";
+        sim_buttontest1: key_14 {
+            gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
+            label = "sim_buttontest1";
+            zephyr,code = <1>; /* KEY_ESC */
+        };
+    };
+};

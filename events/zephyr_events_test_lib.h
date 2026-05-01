@@ -41,6 +41,7 @@ static void assert_led_blink_freq(const struct gpio_dt_spec *led,
                                   int expected_hz,
                                   int tolerance_hz,
                                   const char *led_name);
+static void simulate_button_click(const struct gpio_dt_spec *button);
 static void assert_led_off(const struct gpio_dt_spec *led, const char *led_name);
 static void assert_led_on(const struct gpio_dt_spec *led, const char *led_name);
 static bool is_led_on(const struct gpio_dt_spec *led);

@@ -5,8 +5,8 @@ project(buttons)
 
 target_sources(app PRIVATE main.c)
 
-if(DEFINED TEST_BUILD AND TEST_BUILD)
+# if(DEFINED TEST_BUILD AND TEST_BUILD)
     target_compile_definitions(app PRIVATE "main=student_main")
     target_sources(app PRIVATE button_test_suite.c)
     target_sources(app PRIVATE zephyr_button_test_support.c)
-endif()
+# endif()

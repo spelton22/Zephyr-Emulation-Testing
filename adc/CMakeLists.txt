@@ -5,11 +5,11 @@ project(adc)
 
 target_sources(app PRIVATE main.c)
 
-if(DEFINED TEST_BUILD AND TEST_BUILD)
+# if(DEFINED TEST_BUILD AND TEST_BUILD)
     target_compile_definitions(app PRIVATE "main=student_main")
     target_sources(app PRIVATE adc_test_suite.c)
     target_sources(app PRIVATE zephyr_adc_emul_lib.c)
-endif()
+# endif()
 
 # # --------------------------------------------------
 # # native_sim-only overlay generation

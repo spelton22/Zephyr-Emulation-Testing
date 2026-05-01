@@ -1,0 +1,6 @@
+/ {
+	aliases {
+        ledtest = &led0;
+        buttontest = &button0;
+	};
+};
