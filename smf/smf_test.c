@@ -171,27 +171,4 @@ ZTEST(smf_tests, test_stop_from_right_state)
 /*  Suite registration                                          */
 /* ------------------------------------------------------------ */
 
-ZTEST_SUITE(smf_tests, NULL, NULL, NULL, NULL, NULL);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ZTEST_SUITE(smf_tests, NULL, NULL, before, after, NULL);

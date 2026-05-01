@@ -6,11 +6,11 @@
 #define STUDENT_MAIN_STACK_SIZE 1024
 #define STUDENT_MAIN_PRIORITY 5
 
-// K_THREAD_STACK_DEFINE(student_main_stack, STUDENT_MAIN_STACK_SIZE);
-// struct k_thread student_main_thread;
-// k_tid_t student_main_tid;
+K_THREAD_STACK_DEFINE(student_main_stack, STUDENT_MAIN_STACK_SIZE);
+struct k_thread student_main_thread;
+k_tid_t student_main_tid;
 
-// volatile bool main_is_running = false;
+volatile bool main_is_running = false;
 
 extern int student_main(void);
 

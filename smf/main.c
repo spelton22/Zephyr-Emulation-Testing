@@ -110,7 +110,7 @@ static void state_idle_run(void *o)
     uint32_t ev = k_event_wait(&program_events,
                                EVT_SELECT_LEFT | EVT_SELECT_RIGHT,
                                true,
-                               K_WAIT_FOREVER);
+                               K_FOREVER);
 
     if (ev & EVT_SELECT_LEFT) {
         smf_set_state(SMF_CTX(&s_ctx.ctx), &states[BLINK_LEFT]);

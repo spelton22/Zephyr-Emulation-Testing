@@ -1,17 +1,18 @@
 #include "zephyr_smf_test_lib.h"
 
 #include <zephyr/drivers/gpio/gpio_emul.h>
+#include <zephyr/ztest.h>
 
 /* ------------------------------------------------------------------ */
 /*  TESTING HELPER FUNCTIONS: Fixture                                 */
 /* ------------------------------------------------------------------ */
 
-static void before(void *)
+void before(void *)
 {
     stop_main();  /* abort any leftover thread from the previous test */
 }
 
-static void after(void *)
+void after(void *)
 {
     stop_main();
     k_msleep(50);
@@ -21,7 +22,12 @@ static void after(void *)
 /*  TESTING HELPER FUNCTIONS: Thread                                  */
 /* ------------------------------------------------------------------ */
 
-static void student_main_entry(void *, void *, void *)
+K_THREAD_STACK_DEFINE(student_main_stack, STUDENT_MAIN_STACK_SIZE);
+struct k_thread student_main_thread;
+k_tid_t student_main_tid;
+volatile bool main_running = false;
+
+void student_main_entry(void *, void *, void *)
 {
     main_running = true;
     student_main();
@@ -29,7 +35,7 @@ static void student_main_entry(void *, void *, void *)
 }
 
 /** Kill the background thread cleanly. */
-static void stop_main(void)
+void stop_main(void)
 {
     if (main_running) {
         k_thread_abort(student_main_tid);
@@ -44,7 +50,7 @@ static void stop_main(void)
  * @param settle_ms  How long to wait after spawning before returning.
  *                   150 ms is enough for INIT to run and reach BLINKING_RUN.
  */
-static void start_main(int settle_ms)
+void start_main(int settle_ms)
 {
     /* Spawn student thread */
     student_main_tid = k_thread_create(
@@ -62,18 +68,20 @@ static void start_main(int settle_ms)
 /*  TESTING HELPER FUNCTIONS: Helpers                                 */
 /* ------------------------------------------------------------------ */
 
-static void led_edge_freq_callback(const struct device *dev,
-                              struct gpio_callback *cb,
-                              uint32_t pins)
+volatile int g_led_toggles = 0;
+
+void led_edge_freq_callback(const struct device *dev,
+                            struct gpio_callback *cb,
+                            uint32_t pins)
 {
     g_led_toggles++;
 }
 
-static void assert_led_blink_freq(const struct gpio_dt_spec *led,
-                                  int window_ms,
-                                  int expected_hz,
-                                  int tolerance_hz,
-                                  const char *led_name)
+void assert_led_blink_freq(const struct gpio_dt_spec *led,
+                            int window_ms,
+                            int expected_hz,
+                            int tolerance_hz,
+                            const char *led_name)
 {
     g_led_toggles = 0;  // reset counter
 
@@ -103,7 +111,7 @@ static void assert_led_blink_freq(const struct gpio_dt_spec *led,
 }
 
 /* Assert that an LED is OFF */
-static void assert_led_off(const struct gpio_dt_spec *led, const char *led_name)
+void assert_led_off(const struct gpio_dt_spec *led, const char *led_name)
 {
     int val = gpio_emul_output_get(led->port, led->pin);
     zassert_equal(val, 0,
@@ -111,7 +119,7 @@ static void assert_led_off(const struct gpio_dt_spec *led, const char *led_name)
         led_name, led->pin);
 }
 
-static void simulate_button_click(const struct gpio_dt_spec *button)
+void simulate_button_click(const struct gpio_dt_spec *button)
 {
     gpio_emul_input_set(button->port, button->pin, 1);
     k_sleep(K_MSEC(5));
@@ -119,7 +127,7 @@ static void simulate_button_click(const struct gpio_dt_spec *button)
 }
 
 /* Assert that an LED is ON */
-static void assert_led_on(const struct gpio_dt_spec *led, const char *led_name)
+void assert_led_on(const struct gpio_dt_spec *led, const char *led_name)
 {
     int val = gpio_emul_output_get(led->port, led->pin);
     zassert_equal(val, 1,
@@ -128,14 +136,16 @@ static void assert_led_on(const struct gpio_dt_spec *led, const char *led_name)
 }
 
 /* Return bool LED is ON */
-static bool is_led_on(const struct gpio_dt_spec *led)
+bool is_led_on(const struct gpio_dt_spec *led)
 {
     return gpio_emul_output_get(led->port, led->pin) == 1;
 }
 
-static void led_edge_duty_callback(const struct device *dev,
-                              struct gpio_callback *cb,
-                              uint32_t pins)
+struct duty_ctx ctx;
+
+void led_edge_duty_callback(const struct device *dev,
+                            struct gpio_callback *cb,
+                            uint32_t pins)
 {
     int64_t now = k_uptime_get();
     int64_t delta = now - ctx.last_ts;
@@ -150,11 +160,11 @@ static void led_edge_duty_callback(const struct device *dev,
 }
 
 /* Assert heartbeat duty cycle */
-static void assert_led_duty_cycle(const struct gpio_dt_spec *led,
-                                  const char *name,
-                                  int window_ms,
-                                  int expected_duty,
-                                  int tolerance)
+void assert_led_duty_cycle(const struct gpio_dt_spec *led,
+                            const char *name,
+                            int window_ms,
+                            int expected_duty,
+                            int tolerance)
 {
     struct gpio_callback cb;
 
@@ -168,7 +178,7 @@ static void assert_led_duty_cycle(const struct gpio_dt_spec *led,
     gpio_init_callback(&cb, led_edge_duty_callback, BIT(led->pin));
 
     int ret = gpio_add_callback_dt(led, &cb);
-    zassert_true(ret == 0, "LED %s: callback add failed", "name");
+    zassert_true(ret == 0, "LED %s: callback add failed", name);
 
     ret = gpio_pin_interrupt_configure_dt(led, GPIO_INT_EDGE_BOTH);
     zassert_true(ret == 0, "LED %s: interrupt config failed", name);
