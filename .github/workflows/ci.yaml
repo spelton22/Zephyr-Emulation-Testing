@@ -86,47 +86,41 @@ jobs:
         run: |
           tar -xzf zephyr_workspace.tar.gz
       
-      - name: Modify CMake file
-        run: |
-          cd leds
-          echo 'include(${CMAKE_SOURCE_DIR}/testing.cmake)' >> CMakeLists.txt
-      
       - name: Build for native_sim
         run: |
           cd leds
           west build -b native_sim -- \
             -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-            -DEXTRA_CONF_FILE=${CMAKE_SOURCE_DIR}/sim.prj.conf
+            -DEXTRA_CONF_FILE=sim.prj.conf
       
-      # - name: Build tests for native_sim
-      #   run: |
-      #     cd leds
-      #     west build -b native_sim --build-dir=build_test -- \
-      #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-      #       -DEXTRA_CONF_FILE=${CMAKE_SOURCE_DIR}/sim.prj.conf \
-      #       -DTEST_BUILD=ON \
-      #       -DTEST_FILE=led_test.c
+      - name: Build tests for native_sim
+        run: |
+          cd leds
+          west build -b native_sim --build-dir=build_test -- \
+            -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
+            -DEXTRA_CONF_FILE=sim.prj.conf \
+            -DTEST_BUILD=ON
       
-      # - name: Run unit tests
-      #   run: |
-      #     cd leds
-      #     chmod +x build_test/zephyr/zephyr.exe
-      #     build_test/zephyr/zephyr.exe | tee test_output.log
+      - name: Run unit tests
+        run: |
+          cd leds
+          chmod +x build_test/zephyr/zephyr.exe
+          build_test/zephyr/zephyr.exe | tee test_output.log
+          cat test_output.log
           
-      # - name: Check test results
-      #   run: |
-      #     cd leds
-      #     cat test_output.log
-      #     if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
-      #       echo "All tests passed!"
-      #       exit 0
-      #     elif grep -q "PROJECT EXECUTION FAILED" test_output.log; then
-      #       echo "Tests failed!"
-      #       exit 1
-      #     else
-      #       echo "Could not determine test status"
-      #       exit 1
-      #     fi
+      - name: Check test results
+        run: |
+          cd leds
+          if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
+            echo "All tests passed!"
+            exit 0
+          elif grep -q "PROJECT EXECUTION FAILED" test_output.log; then
+            echo "Tests failed!"
+            exit 1
+          else
+            echo "Could not determine test status"
+            exit 1
+          fi
   
   button_tests:
     needs: [changes, zephyr_setup]
@@ -167,11 +161,11 @@ jobs:
           cd buttons
           chmod +x build_test/zephyr/zephyr.exe
           build_test/zephyr/zephyr.exe | tee test_output.log
+          cat test_output.log
           
       - name: Check test results
         run: |
           cd buttons
-          cat test_output.log
           if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
             echo "All tests passed!"
             exit 0
@@ -222,11 +216,11 @@ jobs:
       #     cd events
       #     chmod +x build_test/zephyr/zephyr.exe
       #     build_test/zephyr/zephyr.exe | tee test_output.log
+      #     cat test_output.log
           
       # - name: Check test results
       #   run: |
       #     cd events
-      #     cat test_output.log
       #     if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
       #       echo "All tests passed!"
       #       exit 0
@@ -277,11 +271,11 @@ jobs:
       #     cd smf
       #     chmod +x build_test/zephyr/zephyr.exe
       #     build_test/zephyr/zephyr.exe | tee test_output.log
+      #     cat test_output.log
           
       # - name: Check test results
       #   run: |
       #     cd smf
-      #     cat test_output.log
       #     if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
       #       echo "All tests passed!"
       #       exit 0
@@ -332,11 +326,11 @@ jobs:
           cd adc
           chmod +x build_test/zephyr/zephyr.exe
           build_test/zephyr/zephyr.exe | tee test_output.log
+          cat test_output.log
           
       - name: Check test results
         run: |
           cd adc
-          cat test_output.log
           if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
             echo "All tests passed!"
             exit 0

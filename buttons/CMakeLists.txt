@@ -1,25 +1,12 @@
 cmake_minimum_required(VERSION 3.20.0)
-find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-project(led_button_tests)
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+project(buttons)
+
+target_sources(app PRIVATE main.c)
 
 if(DEFINED TEST_BUILD AND TEST_BUILD)
-    set(MAIN_C_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/main.c")
-    
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/main_student.c
-"#define main student_main
-#include \"${MAIN_C_PATH}\"
-#undef main
-")
-    
-    target_sources(app PRIVATE 
-        ${CMAKE_CURRENT_BINARY_DIR}/main_student.c
-        src/test_button_callback.c
-    )
-    
-    message(STATUS "Building test suite (main() renamed to student_main)")
-else()
-    # Normal build
-    target_sources(app PRIVATE src/main.c)
-    message(STATUS "Building application")
+    target_compile_definitions(app PRIVATE "main=student_main")
+    target_sources(app PRIVATE button_test_suite.c)
+    target_sources(app PRIVATE zephyr_button_test_support.c)
 endif()

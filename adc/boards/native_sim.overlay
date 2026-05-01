@@ -4,13 +4,13 @@
     };
 
     aliases {
-      readbutton = &button0;
-      sleepbutton = &button1;
-      resetbutton = &button2;
+      readbutton = &sim_adc_btn1;
+      sleepbutton = &sim_adc_btn3;
+      resetbutton = &sim_adc_btn4;
 
-      heartbeat = &led0;
-      blinker   = &led1;
-      error     = &led2;
+      heartbeat = &sim_adc_led1;
+      blinker   = &sim_adc_led2;
+      error     = &sim_adc_led4;
 
       vadc      = &vadc_ch;
     };
