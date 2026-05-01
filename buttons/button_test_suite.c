@@ -3,7 +3,7 @@
 #include <zephyr/drivers/gpio.h>
 
 #include "button_test.h"
-#include "button_test_support.h"
+#include "zephyr_button_test_support.h"
 
 /**
  * @brief Test that callback posts BUTTON_EVENT when called

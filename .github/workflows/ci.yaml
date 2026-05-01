@@ -188,49 +188,49 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      # - name: Download workspace
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: zephyr-workspace
+      - name: Download workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: zephyr-workspace
       
-      # - name: Extract workspace
-      #   run: |
-      #     tar -xzf zephyr_workspace.tar.gz
+      - name: Extract workspace
+        run: |
+          tar -xzf zephyr_workspace.tar.gz
       
-      # - name: Build for native_sim
-      #   run: |
-      #     cd events
-      #     west build -b native_sim -- \
-      #       -DEXTRA_CONF_FILE=sim.prj.conf
+      - name: Build for native_sim
+        run: |
+          cd events
+          west build -b native_sim -- \
+            -DEXTRA_CONF_FILE=sim.prj.conf
       
-      # - name: Build tests for native_sim
-      #   run: |
-      #     cd events
-      #     west build -b native_sim --build-dir=build_test -- \
-      #       -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
-      #       -DEXTRA_CONF_FILE=sim.prj.conf \
-      #       -DTEST_BUILD=ON
+      - name: Build tests for native_sim
+        run: |
+          cd events
+          west build -b native_sim --build-dir=build_test -- \
+            -DDTC_OVERLAY_FILE=boards/native_sim.overlay \
+            -DEXTRA_CONF_FILE=sim.prj.conf \
+            -DTEST_BUILD=ON
       
-      # - name: Run unit tests
-      #   run: |
-      #     cd events
-      #     chmod +x build_test/zephyr/zephyr.exe
-      #     build_test/zephyr/zephyr.exe | tee test_output.log
-      #     cat test_output.log
+      - name: Run unit tests
+        run: |
+          cd events
+          chmod +x build_test/zephyr/zephyr.exe
+          build_test/zephyr/zephyr.exe | tee test_output.log
+          cat test_output.log
           
-      # - name: Check test results
-      #   run: |
-      #     cd events
-      #     if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
-      #       echo "All tests passed!"
-      #       exit 0
-      #     elif grep -q "PROJECT EXECUTION FAILED" test_output.log; then
-      #       echo "Tests failed!"
-      #       exit 1
-      #     else
-      #       echo "Could not determine test status"
-      #       exit 1
-      #     fi
+      - name: Check test results
+        run: |
+          cd events
+          if grep -q "PROJECT EXECUTION SUCCESSFUL" test_output.log; then
+            echo "All tests passed!"
+            exit 0
+          elif grep -q "PROJECT EXECUTION FAILED" test_output.log; then
+            echo "Tests failed!"
+            exit 1
+          else
+            echo "Could not determine test status"
+            exit 1
+          fi
   
   smf_tests:
     needs: [changes, zephyr_setup]

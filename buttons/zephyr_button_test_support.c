@@ -1,6 +1,6 @@
 #include <zephyr/ztest.h>
 #include <zephyr/kernel.h>
-#include "zephyr_button_test.h"
+#include "zephyr_button_test_support.h"
 
 /* Thread for running student's main code */
 #define STUDENT_MAIN_STACK_SIZE 1024

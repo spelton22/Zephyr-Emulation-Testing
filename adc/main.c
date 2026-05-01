@@ -245,28 +245,28 @@ static void state_init_run(void *o)
     /* CHECK INTERFACE READY */
     if (!device_is_ready(read_button.port)) {
         LOG_ERR("gpio0 interface not ready.");
-        smf_set_terminate(SMF_CTX(&s_context), -1);
+        smf_set_terminate(SMF_CTX(&s_ctx), -1);
     }
     if (!device_is_ready(adc_vadc.dev)) {
         LOG_ERR("ADC controller device(s) not ready");
-        smf_set_terminate(SMF_CTX(&s_context), -1);
+        smf_set_terminate(SMF_CTX(&s_ctx), -1);
     }
     
     /* CONFIGURE BUTTON GPIO PINS */
     err = gpio_pin_configure_dt(&read_button, GPIO_INPUT);
     if (err < 0) {
         LOG_ERR("Cannot configure sleep button.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     err = gpio_pin_configure_dt(&sleep_button, GPIO_INPUT);
     if (err < 0) {
         LOG_ERR("Cannot configure sleep button.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     err = gpio_pin_configure_dt(&reset_button, GPIO_INPUT);
     if (err < 0) {
         LOG_ERR("Cannot configure reset button.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     
     /* CONFIGURE BUTTON CALLBACKS */
@@ -274,64 +274,64 @@ static void state_init_run(void *o)
     err = gpio_pin_interrupt_configure_dt(&read_button, GPIO_INT_EDGE_TO_ACTIVE); 
     if (err < 0) {
         LOG_ERR("Cannot attach callback to sw0.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     gpio_init_callback(&read_button_cb, read_button_callback, BIT(read_button.pin));
     err = gpio_add_callback_dt(&read_button, &read_button_cb);
     if (err < 0) {
         LOG_ERR("Cannot add callback to sw0.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     // sleep
     err = gpio_pin_interrupt_configure_dt(&sleep_button, GPIO_INT_EDGE_TO_ACTIVE); 
     if (err < 0) {
         LOG_ERR("Cannot attach callback to sw1.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     gpio_init_callback(&sleep_button_cb, sleep_button_callback, BIT(sleep_button.pin));
     err = gpio_add_callback_dt(&sleep_button, &sleep_button_cb);
     if (err < 0) {
         LOG_ERR("Cannot add callback to sw1.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     // reset
     err = gpio_pin_interrupt_configure_dt(&reset_button, GPIO_INT_EDGE_TO_ACTIVE); 
     if (err < 0) {
         LOG_ERR("Cannot attach callback to sw3.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     gpio_init_callback(&reset_button_cb, reset_button_callback, BIT(reset_button.pin));
     err = gpio_add_callback_dt(&reset_button, &reset_button_cb);
     if (err < 0) {
         LOG_ERR("Cannot add callback to sw3.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     
     /* CONFIGURE LEDs */
     err = gpio_pin_configure_dt(&heartbeat_led, GPIO_OUTPUT_ACTIVE);
     if (err < 0) {
         LOG_ERR("Cannot configure heartbeat LED.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     err = gpio_pin_configure_dt(&blinker_led, GPIO_OUTPUT_INACTIVE);
     if (err < 0) {
         LOG_ERR("Cannot configure iv_pump LED.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     err = gpio_pin_configure_dt(&error_led, GPIO_OUTPUT_INACTIVE);
     if (err < 0) {
         LOG_ERR("Cannot configure error LED.");
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     
     /* CONFIGURE ADC CHANNEL */
     err = adc_channel_setup_dt(&adc_vadc);
     if (err < 0) {
         LOG_ERR("Could not setup ADC channel (%d)", err);
-        smf_set_terminate(SMF_CTX(&s_context), err);
+        smf_set_terminate(SMF_CTX(&s_ctx), err);
     }
     
-    smf_set_state(SMF_CTX(&s_context), &states[IDLE]);
+    smf_set_state(SMF_CTX(&s_ctx), &states[IDLE]);
 }
 
 static void state_reset_run(void *o)
@@ -350,15 +350,15 @@ static void state_idle_run(void *o)
     if (events & READ_EVENT) {
         LOG_INF("Read button pressed");
         // ADC_READ_TRIGGERED();
-        smf_set_state(SMF_CTX(&s_context), &states[READING]);
+        smf_set_state(SMF_CTX(&s_ctx), &states[READING]);
     }
     if (events & SLEEP_EVENT) {
         LOG_INF("Sleep button pressed");
-        smf_set_state(SMF_CTX(&s_context), &states[SLEEP]);
+        smf_set_state(SMF_CTX(&s_ctx), &states[SLEEP]);
     }
     if (events & RESET_EVENT) {
         LOG_INF("Reset button pressed");
-        smf_set_state(SMF_CTX(&s_context), &states[RESET_ST]);
+        smf_set_state(SMF_CTX(&s_ctx), &states[RESET_ST]);
     }
 }
 
@@ -372,11 +372,11 @@ static void state_sleep_run(void *o)
     uint32_t events = k_event_wait(&button_events, SLEEP_EVENT | RESET_EVENT, true, K_FOREVER);
     if (events & SLEEP_EVENT) {
         LOG_INF("Sleep button pressed");
-        smf_set_state(SMF_CTX(&s_context), &states[IDLE]);
+        smf_set_state(SMF_CTX(&s_ctx), &states[IDLE]);
     }
     if (events & RESET_EVENT) {
         LOG_INF("Reset button pressed");
-        smf_set_state(SMF_CTX(&s_context), &states[RESET_ST]);
+        smf_set_state(SMF_CTX(&s_ctx), &states[RESET_ST]);
     }
 }
 
@@ -386,22 +386,22 @@ static void state_reading_entry(void *o)
     gpio_pin_interrupt_configure_dt(&sleep_button, GPIO_INT_DISABLE);
     gpio_pin_interrupt_configure_dt(&reset_button, GPIO_INT_DISABLE);
 
-    (void)adc_sequence_init_dt(&adc_vadc, &sequence);
+    (void)adc_sequence_init_dt(&adc_vadc, &adc_seq);
 }
 
 static void state_reading_run(void *o)
 {
-    int ret = adc_read(adc_vadc.dev, &sequence);
+    int ret = adc_read(adc_vadc.dev, &adc_seq);
     if (ret < 0) {
         LOG_ERR("Could not read (%d)", ret);
-        smf_set_state(SMF_CTX(&s_context), &states[ERROR]);
+        smf_set_state(SMF_CTX(&s_ctx), &states[ERROR_ST]);
         return;
     } else {
-        LOG_DBG("Raw ADC Buffer: %d", buf);
+        LOG_DBG("Raw ADC Buffer: %d", adc_buf);
     }
 
     int32_t val_mv;
-    val_mv = buf;
+    val_mv = adc_buf;
     ret = adc_raw_to_millivolts_dt(&adc_vadc, &val_mv);
     if (ret < 0) {
         LOG_ERR("Buffer cannot be converted to mV; returning raw buffer value.");
@@ -411,7 +411,7 @@ static void state_reading_run(void *o)
     }
 
     /* Linear frequency map: 0 mV → MIN_FREQ_HZ, MAX_V_MV → MAX_FREQ_HZ */
-    float freq = ((float)mv * (MAX_FREQ_HZ - MIN_FREQ_HZ)) / (float)MAX_V_MV + MIN_FREQ_HZ;
+    float freq = ((float)val_mv * (MAX_FREQ_HZ - MIN_FREQ_HZ)) / (float)MAX_V_MV + MIN_FREQ_HZ;
     s_ctx.freq = freq;
     LOG_INF("Mapped freq: %.2f Hz", (double)freq);
 
@@ -420,10 +420,10 @@ static void state_reading_run(void *o)
     s_ctx.ontime_ms  = (int)(period_ms * (BLINK_DUTY_PCT / 100.0f));
     s_ctx.offtime_ms = (int)(period_ms - s_ctx.ontime_ms);
 
-    ADC_READ_COMPLETE(mv, freq);
+    ADC_READ_COMPLETE(val_mv, freq);
     // k_yield(); /* give test thread a chance to observe the event */
 
-    if (mv < MIN_V_MV || mv > MAX_V_MV) {
+    if (val_mv < MIN_V_MV || val_mv > MAX_V_MV) {
         smf_set_state(SMF_CTX(&s_ctx), &states[ERROR_ST]);
     } else {
         smf_set_state(SMF_CTX(&s_ctx), &states[BLINKING]);
@@ -500,17 +500,17 @@ static void state_error_exit(void *o)
 
 int main(void)
 {
-    smf_set_initial(SMF_CTX(&s_context), &states[INIT]);
+    smf_set_initial(SMF_CTX(&s_ctx), &states[INIT]);
     
     while (1) {
         if (timer_error < 0) {
             return timer_error;
         }
         
-        int err = smf_run_state(SMF_CTX(&s_context));
+        int err = smf_run_state(SMF_CTX(&s_ctx));
         if (err) {
             /* handle return code and terminate state machine */
-            smf_set_terminate(SMF_CTX(&s_context), err);
+            smf_set_terminate(SMF_CTX(&s_ctx), err);
             break;
         }
     }

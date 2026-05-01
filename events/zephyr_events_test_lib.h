@@ -1,7 +1,6 @@
-#ifndef GPIO_TEST_H
-#define GPIO_TEST_H
+#ifndef EVENTS_TEST_H
+#define EVENTS_TEST_H
 
-#include "bme554_lib.h"
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
@@ -51,4 +50,4 @@ static void assert_led_duty_cycle(const struct gpio_dt_spec *led,
                                   int expected_duty,
                                   int tolerance);
 
-#endif // GPIO_TEST_H
+#endif // EVENTS_TEST_H

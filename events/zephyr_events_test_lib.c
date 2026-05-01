@@ -1,4 +1,4 @@
-#include "bme554_lib.h"
+#include "zephyr_events_test_lib.h"
 
 K_EVENT_DEFINE(program_test_events);
 
