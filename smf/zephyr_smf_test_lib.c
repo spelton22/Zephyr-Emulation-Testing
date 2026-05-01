@@ -1,8 +1,6 @@
-#include "zephyr_led_test_lib.h"
+#include "zephyr_smf_test_lib.h"
 
 #include <zephyr/drivers/gpio/gpio_emul.h>
-
-K_EVENT_DEFINE(program_test_events);
 
 /* ------------------------------------------------------------------ */
 /*  TESTING HELPER FUNCTIONS: Fixture                                 */
@@ -111,6 +109,13 @@ static void assert_led_off(const struct gpio_dt_spec *led, const char *led_name)
     zassert_equal(val, 0,
         "Expected LED %s on pin %d to be OFF, but it is ON",
         led_name, led->pin);
+}
+
+static void simulate_button_click(const struct gpio_dt_spec *button)
+{
+    gpio_emul_input_set(button->port, button->pin, 1);
+    k_sleep(K_MSEC(5));
+    gpio_emul_input_set(button->port, button->pin, 0);
 }
 
 /* Assert that an LED is ON */

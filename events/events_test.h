@@ -1,5 +1,5 @@
-#ifndef LED_TEST_H
-#define LED_TEST_H
+#ifndef EVENTS_TEST_H
+#define EVENTS_TEST_H
 
 /* ------------------------------------------------------------------ */
 /*  Student GPIOs                                                     */
@@ -14,4 +14,4 @@ extern struct k_event button_events;
 #define EVENT_LED_OFF     BIT(1)
 #define EVENT_BUTTON      BIT(2)
 
-#endif // LED_TEST_H
+#endif // EVENTS_TEST_H

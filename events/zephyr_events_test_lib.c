@@ -2,8 +2,6 @@
 
 #include <zephyr/drivers/gpio/gpio_emul.h>
 
-K_EVENT_DEFINE(program_test_events);
-
 /* ------------------------------------------------------------------ */
 /*  TESTING HELPER FUNCTIONS: Fixture                                 */
 /* ------------------------------------------------------------------ */
@@ -133,6 +131,22 @@ static void assert_led_on(const struct gpio_dt_spec *led, const char *led_name)
 static bool is_led_on(const struct gpio_dt_spec *led)
 {
     return gpio_emul_output_get(led->port, led->pin) == 1;
+}
+
+static void led_edge_duty_callback(const struct device *dev,
+                              struct gpio_callback *cb,
+                              uint32_t pins)
+{
+    int64_t now = k_uptime_get();
+    int64_t delta = now - ctx.last_ts;
+
+    if (ctx.last_state) {
+        ctx.on_time += delta;
+    }
+    ctx.total_time += delta;
+
+    ctx.last_state = !ctx.last_state;
+    ctx.last_ts = now;
 }
 
 /* Assert heartbeat duty cycle */
