@@ -9,42 +9,31 @@
 /*  IDLE state behavior                                         */
 /* ------------------------------------------------------------ */
 
-ZTEST(smf_tests, test_starts_in_idle_state)
+ZTEST(app_test, test_initial_state_idle)
 {
     start_main(1000);
 
-    uint32_t ev = k_event_wait(&program_events,
-                               EVT_ENTER_IDLE,
-                               false,
-                               K_MSEC(1000));
+    assert_state(&states[IDLE]);
 
-    zassert_equal(ev & EVT_ENTER_IDLE, EVT_ENTER_IDLE,
-                  "Did not enter IDLE state");
-
-    assert_led_off(&led_left, "LED_LEFT");
-    assert_led_off(&led_right, "LED_RIGHT");
+    assert_led_off(&led_left, "left");
+    assert_led_off(&led_right, "right");
 }
 
 /* ------------------------------------------------------------ */
 /*  Button → BLINK_LEFT transition                              */
 /* ------------------------------------------------------------ */
 
-ZTEST(smf_tests, test_left_button_enters_blink_left)
+ZTEST(app_test, test_left_button_enters_blink_left)
 {
-    start_main(3000);
+    start_main(1000);
 
     simulate_button_click(&btn_left);
+    k_msleep(100);
 
-    uint32_t ev = k_event_wait(&program_events,
-                               EVT_ENTER_BLINK_LEFT,
-                               false,
-                               K_MSEC(1000));
+    assert_state(&states[BLINK_LEFT]);
 
-    zassert_equal(ev & EVT_ENTER_BLINK_LEFT, EVT_ENTER_BLINK_LEFT,
-                  "Did not transition to BLINK_LEFT");
-
-    k_msleep(250);
-
+    /* Right LED must be off in this state */
+    assert_led_off(&led_right, "right");
     /* Left LED should now be active */
     assert_led_blink_freq(&led_left,
                           4000,
@@ -57,22 +46,18 @@ ZTEST(smf_tests, test_left_button_enters_blink_left)
 /*  Button → BLINK_RIGHT transition                             */
 /* ------------------------------------------------------------ */
 
-ZTEST(smf_tests, test_right_button_enters_blink_right)
+ZTEST(app_test, test_right_button_enters_blink_right)
 {
-    start_main(3000);
+    start_main(1000);
 
     simulate_button_click(&btn_right);
+    k_msleep(100);
 
-    uint32_t ev = k_event_wait(&program_events,
-                               EVT_ENTER_BLINK_RIGHT,
-                               false,
-                               K_MSEC(1000));
+    assert_state(&states[BLINK_RIGHT]);
 
-    zassert_equal(ev & EVT_ENTER_BLINK_RIGHT, EVT_ENTER_BLINK_RIGHT,
-                  "Did not transition to BLINK_RIGHT");
-
-    k_msleep(250);
-
+    /* Left LED must be off */
+    assert_led_off(&led_left, "left");
+    /* Right LED should now be active */
     assert_led_blink_freq(&led_right,
                           4000,
                           1,
@@ -84,87 +69,59 @@ ZTEST(smf_tests, test_right_button_enters_blink_right)
 /*  STOP button returns to IDLE                                 */
 /* ------------------------------------------------------------ */
 
-ZTEST(smf_tests, test_stop_returns_to_idle_from_left)
+ZTEST(app_test, test_stop_returns_to_idle_from_left)
 {
-    start_main(3000);
+    start_main(1000);
 
-    /* go to BLINK_LEFT first */
     simulate_button_click(&btn_left);
+    k_msleep(100);
+    assert_state(&states[BLINK_LEFT]);
 
-    k_msleep(300);
-
-    /* then stop */
     simulate_button_click(&btn_stop);
+    k_msleep(100);
 
-    uint32_t ev = k_event_wait(&program_events,
-                               EVT_ENTER_IDLE,
-                               false,
-                               K_MSEC(1000));
+    assert_state(&states[IDLE]);
 
-    zassert_equal(ev & EVT_ENTER_IDLE, EVT_ENTER_IDLE,
-                  "Did not return to IDLE");
+    assert_led_off(&led_left, "left");
+    assert_led_off(&led_right, "right");
+}
 
-    assert_led_off(&led_left, "LED_LEFT");
-    assert_led_off(&led_right, "LED_RIGHT");
+ZTEST(app_test, test_stop_returns_to_idle_from_right)
+{
+    start_main(1000);
+
+    simulate_button_click(&btn_right);
+    k_msleep(100);
+    assert_state(&states[BLINK_RIGHT]);
+
+    simulate_button_click(&btn_stop);
+    k_msleep(100);
+
+    assert_state(&states[IDLE]);
+
+    assert_led_off(&led_left, "left");
+    assert_led_off(&led_right, "right");
 }
 
 /* ------------------------------------------------------------ */
 /*  LEFT ↔ RIGHT switching                                      */
 /* ------------------------------------------------------------ */
 
-ZTEST(smf_tests, test_switch_left_to_right)
+ZTEST(app_test, test_left_to_right_transition)
 {
-    start_main(3000);
+    start_main(1000);
 
     simulate_button_click(&btn_left);
-    k_msleep(500);
-    
-    assert_led_blink_freq(&led_left,
-                          4000,
-                          1,
-                          1,
-                          "LED_LEFT");
+    k_msleep(100);
+    assert_state(&states[BLINK_LEFT]);
 
     simulate_button_click(&btn_right);
+    k_msleep(100);
 
-    uint32_t ev = k_event_wait(&program_events,
-                               EVT_ENTER_BLINK_RIGHT,
-                               false,
-                               K_MSEC(1000));
+    assert_state(&states[BLINK_RIGHT]);
 
-    zassert_equal(ev & EVT_ENTER_BLINK_RIGHT, EVT_ENTER_BLINK_RIGHT,
-                  "Did not switch to BLINK_RIGHT");
-
-    assert_led_blink_freq(&led_right,
-                          4000,
-                          1,
-                          1,
-                          "LED_RIGHT");
-}
-
-/* ------------------------------------------------------------ */
-/*  STOP always overrides state                                 */
-/* ------------------------------------------------------------ */
-
-ZTEST(smf_tests, test_stop_from_right_state)
-{
-    start_main(3000);
-
-    simulate_button_click(&btn_right);
-    k_msleep(250);
-
-    simulate_button_click(&btn_stop);
-
-    uint32_t ev = k_event_wait(&program_events,
-                               EVT_ENTER_IDLE,
-                               false,
-                               K_MSEC(1000));
-
-    zassert_equal(ev & EVT_ENTER_IDLE, EVT_ENTER_IDLE,
-                  "STOP did not return to IDLE");
-
-    assert_led_off(&led_left, "LED_LEFT");
-    assert_led_off(&led_right, "LED_RIGHT");
+    /* Ensure left LED stops blinking */
+    assert_led_off(&led_left, "left");
 }
 
 /* ------------------------------------------------------------ */

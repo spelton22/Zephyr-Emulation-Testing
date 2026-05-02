@@ -1,5 +1,5 @@
-#ifndef TEST_BUTTON_CALLBACK_H
-#define TEST_BUTTON_CALLBACK_H
+#ifndef BUTTON_TEST_H
+#define BUTTON_TEST_H
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
@@ -12,6 +12,8 @@ extern int LED_STATE;
 
 #define BUTTON_EVENT BIT(0)
 
-extern void button_test_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
+extern const struct gpio_dt_spec button_test;
 
-#endif 
+// extern void button_test_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
+
+#endif // BUTTON_TEST_H

@@ -12,6 +12,9 @@ extern const struct gpio_dt_spec btn_stop;
 
 extern struct k_event program_events;
 
+extern struct app_ctx s_ctx;
+extern enum state_ids;
+
 /* Input events */
 #define EVT_SELECT_LEFT   BIT(0)
 #define EVT_SELECT_RIGHT  BIT(1)

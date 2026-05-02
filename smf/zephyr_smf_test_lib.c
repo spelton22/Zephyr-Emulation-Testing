@@ -192,6 +192,8 @@ void assert_led_duty_cycle(const struct gpio_dt_spec *led,
         "LED %s: no activity detected", name);
 
     float measured_duty = (float)ctx.on_time / (float)ctx.total_time;
+    
+    measured_duty = measured_duty * 100; // as a percentage
 
     zassert_true(
         measured_duty > (expected_duty - tolerance) &&
@@ -202,4 +204,12 @@ void assert_led_duty_cycle(const struct gpio_dt_spec *led,
         (double)expected_duty,
         (double)tolerance
     );
+}
+
+extern struct app_ctx s_ctx;
+
+void assert_state(const struct smf_state *expected)
+{
+    const struct smf_state *current = s_ctx.ctx.current;
+    zassert_equal_ptr(current, expected, "Unexpected state");
 }

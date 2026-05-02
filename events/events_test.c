@@ -44,7 +44,7 @@ ZTEST(events_tests, test_led_on_event_matches_state)
 {
     start_main(1000);
 
-    uint32_t events = k_event_wait(&button_events,
+    uint32_t events = k_event_wait(&program_events,
                                EVENT_LED_ON,
                                false,
                                K_MSEC(2000));
@@ -59,7 +59,7 @@ ZTEST(events_tests, test_led_off_event_matches_state)
 {
     start_main(1000);
 
-    uint32_t events = k_event_wait(&button_events,
+    uint32_t events = k_event_wait(&program_events,
                                EVENT_LED_OFF,
                                false,
                                K_MSEC(2000));
@@ -74,7 +74,7 @@ ZTEST(events_tests, test_led_toggles_events)
 {
     start_main(1000);
 
-    uint32_t events = k_event_wait(&button_events,
+    uint32_t events = k_event_wait(&program_events,
                                EVENT_LED_OFF,
                                false,
                                K_MSEC(2000));
@@ -82,7 +82,7 @@ ZTEST(events_tests, test_led_toggles_events)
     zassert_equal(events & EVENT_LED_OFF, EVENT_LED_OFF,
                   "Did not receive LED_OFF event");
 
-    events = k_event_wait(&button_events,
+    events = k_event_wait(&program_events,
                                EVENT_LED_ON,
                                false,
                                K_MSEC(2000));
@@ -97,7 +97,7 @@ ZTEST(events_tests, test_button_event_generated)
 
     simulate_button_click(&button);
 
-    uint32_t events = k_event_wait(&button_events,
+    uint32_t events = k_event_wait(&program_events,
                                EVENT_BUTTON,
                                false,
                                K_MSEC(1000));

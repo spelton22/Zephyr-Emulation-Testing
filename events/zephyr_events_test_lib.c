@@ -192,6 +192,8 @@ void assert_led_duty_cycle(const struct gpio_dt_spec *led,
         "LED %s: no activity detected", name);
 
     float measured_duty = (float)ctx.on_time / (float)ctx.total_time;
+    
+    measured_duty = measured_duty * 100; // as a percentage
 
     zassert_true(
         measured_duty > (expected_duty - tolerance) &&
