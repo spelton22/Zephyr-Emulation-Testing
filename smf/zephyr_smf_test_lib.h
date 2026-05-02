@@ -3,6 +3,7 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/smf.h>
 
 #define LED_FREQ 1
 

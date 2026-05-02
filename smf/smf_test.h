@@ -13,7 +13,12 @@ extern const struct gpio_dt_spec btn_stop;
 extern struct k_event program_events;
 
 extern struct app_ctx s_ctx;
-extern enum state_ids;
+enum state_ids {
+    INIT,
+    IDLE,
+    BLINK_LEFT,
+    BLINK_RIGHT,
+};
 
 /* Input events */
 #define EVT_SELECT_LEFT   BIT(0)

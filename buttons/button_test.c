@@ -69,16 +69,6 @@ ZTEST(button_press_tests, test_main_responds_to_first_press)
     LED_STATE = LED_OFF;
     int initial_state = LED_STATE;
     
-    // /* Start student_main in background thread */
-    // student_main_tid = k_thread_create(&student_main_thread,
-    //                                     student_main_stack,
-    //                                     K_THREAD_STACK_SIZEOF(student_main_stack),
-    //                                     student_main_thread_entry,
-    //                                     NULL, NULL, NULL,
-    //                                     STUDENT_MAIN_PRIORITY, 0, K_NO_WAIT);
-    
-    // k_msleep(50);
-    
     zassert_equal(LED_STATE, initial_state, "LED should not change before button press");
     
     /* Simulate button press */
@@ -103,16 +93,6 @@ ZTEST(button_press_tests, test_main_responds_to_second_press)
     
     /* Start with LED OFF */
     LED_STATE = LED_OFF;
-    
-    // /* Start student_main */
-    // student_main_tid = k_thread_create(&student_main_thread,
-    //                                     student_main_stack,
-    //                                     K_THREAD_STACK_SIZEOF(student_main_stack),
-    //                                     student_main_thread_entry,
-    //                                     NULL, NULL, NULL,
-    //                                     STUDENT_MAIN_PRIORITY, 0, K_NO_WAIT);
-    
-    // k_msleep(50);
     
     /* First press - should turn LED ON */
     simulate_button_click(&button_test);

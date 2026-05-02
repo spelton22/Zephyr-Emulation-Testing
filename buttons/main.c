@@ -67,7 +67,7 @@ int main(void)
     return -1;
   }
 
-  uint32_t events = k_event_wait(&button_events, BUTTON_EVENT, true, K_FOREVER);
+  uint32_t events = k_event_wait(&button_events, BUTTON_EVENT, false, K_FOREVER);
 
   if (events & BUTTON_EVENT) {
     LED_STATE = !LED_STATE;
@@ -79,8 +79,10 @@ int main(void)
       LOG_INF("Button ON pressed, LED ON\n");
     }
   }
+  
+  k_event_clear(&button_events, BUTTON_EVENT);
 
-  uint32_t event_2 = k_event_wait(&button_events, BUTTON_EVENT, true, K_FOREVER);
+  uint32_t event_2 = k_event_wait(&button_events, BUTTON_EVENT, false, K_FOREVER);
 
   if (event_2 & BUTTON_EVENT) {
       LED_STATE = !LED_STATE;
@@ -92,6 +94,8 @@ int main(void)
         LOG_INF("Button ON pressed, LED ON\n");
       }
   }
+  
+  k_event_clear(&button_events, BUTTON_EVENT);
 
   LOG_INF("exiting code");
   return 0;
