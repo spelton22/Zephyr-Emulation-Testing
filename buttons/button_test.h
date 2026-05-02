@@ -10,7 +10,8 @@ extern int LED_STATE;
 #define LED_ON 1
 #define LED_OFF 0
 
-#define BUTTON_EVENT BIT(0)
+#define BUTTON_EVENT1 BIT(0)
+#define BUTTON_EVENT2 BIT(1)
 
 extern const struct gpio_dt_spec button_test;
 

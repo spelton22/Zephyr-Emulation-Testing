@@ -45,7 +45,7 @@ struct app_ctx {
 struct app_ctx s_ctx;
 
 /* Forward declaration */
-static const struct smf_state states[];
+const struct smf_state states[];
 
 /* ---------------- ISR callbacks ---------------- */
 
@@ -176,6 +176,15 @@ void state_blink_right_run(void *o)
         smf_set_state(SMF_CTX(&s_ctx.ctx), &states[IDLE]);
     }
 }
+
+/* ---------------- State table ---------------- */
+
+const struct smf_state states[] = {
+    [INIT]        = SMF_CREATE_STATE(NULL, state_init_run, NULL, NULL, NULL),
+    [IDLE]        = SMF_CREATE_STATE(state_idle_entry, state_idle_run, NULL, NULL, NULL),
+    [BLINK_LEFT]  = SMF_CREATE_STATE(state_blink_left_entry, state_blink_left_run, NULL, NULL, NULL),
+    [BLINK_RIGHT] = SMF_CREATE_STATE(state_blink_right_entry, state_blink_right_run, NULL, NULL, NULL),
+};
 
 /* ---------------- MAIN ---------------- */
 

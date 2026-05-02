@@ -16,7 +16,8 @@ int err = 0;
 int LED_STATE = LED_OFF;
 
 K_EVENT_DEFINE(button_events);
-#define BUTTON_EVENT BIT(0)
+#define BUTTON_EVENT1 BIT(0)
+#define BUTTON_EVENT2 BIT(1)
 
 const struct gpio_dt_spec led_test = GPIO_DT_SPEC_GET(DT_ALIAS(ledtest), gpios);
 const struct gpio_dt_spec button_test = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest), gpios);
@@ -24,10 +25,12 @@ const struct gpio_dt_spec button_test = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest), g
 static struct gpio_callback button_test_cb;  
 
 void button_test_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
+int first_event;
 
 int init(){
 
   k_event_init(&button_events);
+  first_event = 1;
 
   if (!device_is_ready(button_test.port)) {
       LOG_ERR("gpio0 interface not ready."); 
@@ -67,35 +70,31 @@ int main(void)
     return -1;
   }
 
-  uint32_t events = k_event_wait(&button_events, BUTTON_EVENT, false, K_FOREVER);
+  uint32_t events = k_event_wait(&button_events, BUTTON_EVENT1, true, K_FOREVER);
 
-  if (events & BUTTON_EVENT) {
+  if (events & BUTTON_EVENT1) {
     LED_STATE = !LED_STATE;
     gpio_pin_set_dt(&led_test, LED_STATE);
-    k_event_clear(&button_events, BUTTON_EVENT);
+    k_event_clear(&button_events, BUTTON_EVENT1);
     if(LED_STATE == LED_OFF){
       LOG_INF("Button OFF pressed, LED OFF\n");
     } else {
       LOG_INF("Button ON pressed, LED ON\n");
     }
   }
-  
-  k_event_clear(&button_events, BUTTON_EVENT);
 
-  uint32_t event_2 = k_event_wait(&button_events, BUTTON_EVENT, false, K_FOREVER);
+  uint32_t event_2 = k_event_wait(&button_events, BUTTON_EVENT2, true, K_FOREVER);
 
-  if (event_2 & BUTTON_EVENT) {
+  if (event_2 & BUTTON_EVENT2) {
       LED_STATE = !LED_STATE;
       gpio_pin_set_dt(&led_test, LED_STATE);
-      k_event_clear(&button_events, BUTTON_EVENT);
+      k_event_clear(&button_events, BUTTON_EVENT2);
       if(LED_STATE == LED_OFF){
         LOG_INF("Button OFF pressed, LED OFF\n");
       } else {
         LOG_INF("Button ON pressed, LED ON\n");
       }
   }
-  
-  k_event_clear(&button_events, BUTTON_EVENT);
 
   LOG_INF("exiting code");
   return 0;
@@ -104,5 +103,10 @@ int main(void)
 
 void button_test_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-  k_event_post(&button_events, BUTTON_EVENT);
+  if (first_event) {
+    k_event_post(&button_events, BUTTON_EVENT1);
+    first_event = 0;
+  } else {
+    k_event_post(&button_events, BUTTON_EVENT2);
+  }
 }
