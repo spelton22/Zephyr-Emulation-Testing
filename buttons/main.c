@@ -103,10 +103,13 @@ int main(void)
 
 void button_test_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
+  printk("in button callback \n");
   if (first_event) {
     k_event_post(&button_events, BUTTON_EVENT1);
+    printk("first event button\n");
     first_event = 0;
   } else {
     k_event_post(&button_events, BUTTON_EVENT2);
+    printk("second button event \n");
   }
 }

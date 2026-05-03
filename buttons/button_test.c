@@ -53,17 +53,20 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
     start_main(1000);
     
     /* First press */
+    printk("button pressed\n");
     simulate_button_click(&button_test);
     k_msleep(50);
-    
+    printk("after button pressed\n");
     uint32_t events1 = k_event_wait(&button_events, BUTTON_EVENT1, false, K_MSEC(100));
     zassert_true(events1 & BUTTON_EVENT1, "First callback should post event");
 
     // zassert_true(wait_for_event(BUTTON_EVENT1, 800), "First callback should post event");
     
     /* Press again */
+    printk("button pressed again \n");
     simulate_button_click(&button_test);
     k_msleep(50);
+    printk("after button press 2\n");
     
     uint32_t events2 = k_event_wait(&button_events, BUTTON_EVENT2, false, K_MSEC(100));
     zassert_true(events2 & BUTTON_EVENT2, "Second callback should also post event");
