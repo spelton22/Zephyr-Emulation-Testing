@@ -1,52 +1,35 @@
-#ifndef ZEPHYR_BUTTON_TEST_H
-#define ZEPHYR_BUTTON_TEST_H
+#ifndef ZEPHYR_BUTTON_TEST_LIB_H
+#define ZEPHYR_BUTTON_TEST_LIB_H
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
+/* ---- student_main symbols (defined in main.c) ---- */
+extern int student_main(void);
+extern struct k_event button_events;
+extern int LED_STATE;
+extern const struct gpio_dt_spec button_test;
+
+/* ---- event/LED constants ---- */
+#define LED_ON        1
+#define LED_OFF       0
+#define BUTTON_EVENT1 BIT(0)
+
+/* ---- thread config ---- */
 #define STUDENT_MAIN_STACK_SIZE 2048
 #define STUDENT_MAIN_PRIORITY   5
 
-extern int student_main(void);  /* renamed by CMake */
+extern struct k_thread student_main_thread;
+extern k_tid_t         student_main_tid;
+extern volatile bool   main_running;
 
-// fixture
+/* ---- test helpers ---- */
 void before(void *);
 void after(void *);
-
-// thread boilerplate
-extern struct k_thread student_main_thread;
-extern k_tid_t student_main_tid;
-extern volatile bool main_running;
 void student_main_entry(void *, void *, void *);
 void stop_main(void);
 void start_main(int settle_ms);
-
 void simulate_button_click(const struct gpio_dt_spec *button);
 bool wait_for_event(uint32_t mask, int timeout_ms);
 
-
-#endif // ZEPHYR_BUTTON_TEST_H
-
-
-// extern struct k_thread student_main_thread;
-// extern k_tid_t student_main_tid;
-// extern volatile bool main_is_running;
-
-// void student_main_thread_entry(void *p1, void *p2, void *p3);
-// void test_before(void *fixture);
-// void test_after(void *fixture);
-
-// extern struct k_event button_events;
-// extern int LED_STATE;
-
-// #define LED_ON 1
-// #define LED_OFF 0
-
-// #define BUTTON_EVENT BIT(0)
-
-// extern k_thread_stack_t student_main_stack;
-// extern struct k_thread student_main_thread;
-// extern k_tid_t student_main_tid;
-// extern volatile bool main_is_running;
-
-// #endif // ZEPHYR_BUTTON_TEST_H
+#endif // ZEPHYR_BUTTON_TEST_LIB_H

@@ -2,39 +2,23 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
-#include "button_test.h"
+// #include "button_test.h"
 #include "zephyr_button_test_lib.h"
 
 /* Thread for running student's main code */
-#define STUDENT_MAIN_STACK_SIZE 1024
-#define STUDENT_MAIN_PRIORITY 5
+// #define STUDENT_MAIN_STACK_SIZE 1024
+// #define STUDENT_MAIN_PRIORITY 5
 // K_THREAD_STACK_DEFINE(student_main_stack, STUDENT_MAIN_STACK_SIZE);
-
-bool wait_for_event(uint32_t mask, int timeout_ms)
-{
-    int64_t start = k_uptime_get();
-    uint32_t events = 0;
-
-    do {
-        events = k_event_wait(&button_events, mask, false, K_MSEC(20));
-        if (events & mask) {
-            return true;
-        }
-    } while ((k_uptime_get() - start) < timeout_ms);
-
-    return false;
-}
-
 
 /**
  * @brief Test that callback posts BUTTON_EVENT when called
  */
 ZTEST(button_press_tests, test_callback_posts_event)
 {
-    start_main(1000);
+    // start_main(1000);
     k_event_clear(&button_events, BUTTON_EVENT1);
     
-    uint32_t events_before = k_event_wait(&button_events, BUTTON_EVENT1, false, K_MSEC(100));
+    uint32_t events_before = k_event_wait(&button_events, BUTTON_EVENT1, false, K_NO_WAIT);
     zassert_false(events_before & BUTTON_EVENT1, "BUTTON_EVENT should not be set initially");
 
     simulate_button_click(&button_test);
@@ -49,7 +33,7 @@ ZTEST(button_press_tests, test_callback_posts_event)
  */
 ZTEST(button_press_tests, test_callback_multiple_calls)
 {
-    start_main(1000);
+    // start_main(1000);
     k_event_clear(&button_events, BUTTON_EVENT1);
 
     simulate_button_click(&button_test);
@@ -74,7 +58,7 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
  */
 ZTEST(button_press_tests, test_main_responds_to_first_press)
 {
-    start_main(1000);
+    // start_main(1000);
     k_event_clear(&button_events, BUTTON_EVENT1);
 
     LED_STATE = LED_OFF;
@@ -95,7 +79,7 @@ ZTEST(button_press_tests, test_main_responds_to_first_press)
  */
 ZTEST(button_press_tests, test_main_responds_to_second_press)
 {
-    start_main(1000);
+    // start_main(1000);
     k_event_clear(&button_events, BUTTON_EVENT1);
 
     LED_STATE = LED_OFF;
