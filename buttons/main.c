@@ -12,7 +12,7 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 #define LED_ON 1
 #define LED_OFF 0
 
-int err = 0;
+// int err = 0;
 int LED_STATE = LED_OFF;
 
 K_EVENT_DEFINE(button_events);
@@ -28,9 +28,10 @@ void button_test_callback(const struct device *dev, struct gpio_callback *cb, ui
 int first_event;
 
 int init(){
+  int err = 0;
 
   // k_event_init(&button_events);
-  first_event = 1;
+  // first_event = 1;
 
   if (!device_is_ready(button_test.port)) {
       LOG_ERR("gpio0 interface not ready."); 
@@ -46,12 +47,13 @@ int init(){
   err = gpio_pin_interrupt_configure_dt(&button_test, GPIO_INT_EDGE_TO_ACTIVE);
   if (err < 0) {
       LOG_ERR("Cannot attach callback to sw0.");
+      return err;
   }
 
   gpio_init_callback(&button_test_cb, button_test_callback, BIT(button_test.pin)); 
   gpio_add_callback_dt(&button_test, &button_test_cb);
 
-  err = gpio_pin_configure_dt(&led_test, GPIO_OUTPUT_ACTIVE);  // ACTIVE referes to ON, not HIGH
+  err = gpio_pin_configure_dt(&led_test, GPIO_OUTPUT_INACTIVE);  // ACTIVE referes to ON, not HIGH
   if (err < 0) {
       LOG_ERR("Cannot configure GPIO output pin.");
       return err;
