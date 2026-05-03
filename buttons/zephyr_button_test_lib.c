@@ -85,7 +85,6 @@ void simulate_button_click(const struct gpio_dt_spec *button)
 
 
 
-
 // #include <zephyr/ztest.h>
 // #include <zephyr/kernel.h>
 // #include "zephyr_button_test_lib.h"

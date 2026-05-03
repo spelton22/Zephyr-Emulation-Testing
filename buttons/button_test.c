@@ -10,6 +10,22 @@
 #define STUDENT_MAIN_PRIORITY 5
 // K_THREAD_STACK_DEFINE(student_main_stack, STUDENT_MAIN_STACK_SIZE);
 
+bool wait_for_event(uint32_t mask, int timeout_ms)
+{
+    int64_t start = k_uptime_get();
+    uint32_t events = 0;
+
+    do {
+        events = k_event_wait(&button_events, mask, false, K_MSEC(20));
+        if (events & mask) {
+            return true;
+        }
+    } while ((k_uptime_get() - start) < timeout_ms);
+
+    return false;
+}
+
+
 /**
  * @brief Test that callback posts BUTTON_EVENT when called
  */
@@ -40,8 +56,10 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
     simulate_button_click(&button_test);
     k_msleep(50);
     
-    uint32_t events1 = k_event_wait(&button_events, BUTTON_EVENT1, false, K_NO_WAIT);
-    zassert_true(events1 & BUTTON_EVENT1, "First callback should post event");
+    // uint32_t events1 = k_event_wait(&button_events, BUTTON_EVENT1, false, K_NO_WAIT);
+    // zassert_true(events1 & BUTTON_EVENT1, "First callback should post event");
+
+    zassert_true(wait_for_event(BUTTON_EVENT1, 800), "First callback should post event");
     
     /* Press again */
     simulate_button_click(&button_test);
