@@ -49,4 +49,4 @@ bool wait_for_event(uint32_t mask, int timeout_ms);
 // extern k_tid_t student_main_tid;
 // extern volatile bool main_is_running;
 
-#endif // ZEPHYR_BUTTON_TEST_H
+// #endif // ZEPHYR_BUTTON_TEST_H
