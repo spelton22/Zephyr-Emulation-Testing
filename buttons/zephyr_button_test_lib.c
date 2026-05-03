@@ -7,6 +7,7 @@
 void before(void *)
 {
     stop_main();
+    reset_button(&button_test);
     // start_main(1000);
 }
 
@@ -39,6 +40,9 @@ void stop_main(void)
 
 void start_main(int settle_ms)
 {
+    gpio_emul_input_set(button_test.port, button_test.pin, 0);
+    k_msleep(50);
+
     student_main_tid = k_thread_create(
         &student_main_thread,
         student_main_stack,
@@ -55,4 +59,10 @@ void simulate_button_click(const struct gpio_dt_spec *button)
     gpio_emul_input_set(button->port, button->pin, 1);
     k_sleep(K_MSEC(5));
     gpio_emul_input_set(button->port, button->pin, 0);
+}
+
+void reset_button(const struct gpio_dt_spec *button)
+{
+    gpio_emul_input_set(button->port, button->pin, 0);
+    k_msleep(100);  // let the gpio-keys poll cycle clear
 }

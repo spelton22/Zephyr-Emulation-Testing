@@ -30,6 +30,7 @@ void student_main_entry(void *, void *, void *);
 void stop_main(void);
 void start_main(int settle_ms);
 void simulate_button_click(const struct gpio_dt_spec *button);
+void reset_button(const struct gpio_dt_spec *button);
 bool wait_for_event(uint32_t mask, int timeout_ms);
 
 #endif // ZEPHYR_BUTTON_TEST_LIB_H
