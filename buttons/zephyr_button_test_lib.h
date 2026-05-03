@@ -6,18 +6,25 @@
 
 /* ---- student_main symbols (defined in main.c) ---- */
 extern int student_main(void);
-extern struct k_event button_events;
+// extern struct k_event button_events;
+extern struct k_event program_test_events;
 extern int LED_STATE;
 extern const struct gpio_dt_spec button_test;
 
 /* ---- event/LED constants ---- */
 #define LED_ON        1
 #define LED_OFF       0
-#define BUTTON_EVENT1 BIT(0)
+// #define BUTTON_EVENT1 BIT(0)
+#define BUTTON_PRESS_NOTICE   BIT(0)
 
 /* ---- thread config ---- */
 #define STUDENT_MAIN_STACK_SIZE 2048
 #define STUDENT_MAIN_PRIORITY   5
+
+#define BUTTON_PRESS()                                            \
+{                                                                       \
+  k_event_post(&program_test_events, BUTTON_PRESS_NOTICE);      \
+}
 
 extern struct k_thread student_main_thread;
 extern k_tid_t         student_main_tid;

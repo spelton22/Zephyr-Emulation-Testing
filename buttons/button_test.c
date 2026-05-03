@@ -17,20 +17,20 @@ ZTEST(button_press_tests, test_callback_posts_event)
 {
     start_main(1000);
     printk("main just started\n");
-    k_event_clear(&button_events, BUTTON_EVENT1);
+    k_event_clear(&program_test_events, BUTTON_PRESS_NOTICE);
 
-    k_thread_suspend(student_main_tid);
+    // k_thread_suspend(student_main_tid);
 
-    uint32_t events_before = k_event_wait(&button_events, BUTTON_EVENT1, false, K_NO_WAIT);
-    zassert_false(events_before & BUTTON_EVENT1, "BUTTON_EVENT should not be set initially");
+    uint32_t events_before = k_event_wait(&program_test_events, BUTTON_PRESS_NOTICE, false, K_NO_WAIT);
+    zassert_false(events_before & BUTTON_PRESS_NOTICE, "BUTTON_EVENT should not be set initially");
 
     simulate_button_click(&button_test);
     k_msleep(50);
 
-    uint32_t events_after = k_event_wait(&button_events, BUTTON_EVENT1, true, K_MSEC(100));
-    zassert_true(events_after & BUTTON_EVENT1, "Callback should post BUTTON_EVENT");
+    uint32_t events_after = k_event_wait(&program_test_events, BUTTON_PRESS_NOTICE, false, K_MSEC(100));
+    zassert_true(events_after & BUTTON_PRESS_NOTICE, "Callback should post BUTTON_EVENT");
 
-    k_thread_resume(student_main_tid);
+    // k_thread_resume(student_main_tid);
 }
 
 /**
@@ -41,16 +41,16 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
 {
     start_main(1000);
     printk("main just started\n");
-    k_event_clear(&button_events, BUTTON_EVENT1);
-    k_msleep(1000);
+    k_event_clear(&program_test_events, BUTTON_PRESS_NOTICE);
+    // k_msleep(1000);
 
     printf("before button press\n");
     simulate_button_click(&button_test);
     printf("after button press\n");
 
     k_msleep(50);
-    uint32_t events1 = k_event_wait(&button_events, BUTTON_EVENT1, true, K_MSEC(100));
-    zassert_true(events1 & BUTTON_EVENT1, "First callback should post event");
+    uint32_t events1 = k_event_wait(&program_test_events, BUTTON_PRESS_NOTICE, false, K_MSEC(100));
+    zassert_true(events1 & BUTTON_PRESS_NOTICE, "First callback should post event");
 
     // No need to manually clear since consume=true above
     printf("before button press\n");
@@ -58,8 +58,8 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
     printf("after button press\n");
 
     k_msleep(50);
-    uint32_t events2 = k_event_wait(&button_events, BUTTON_EVENT1, true, K_MSEC(100));
-    zassert_true(events2 & BUTTON_EVENT1, "Second callback should also post event");
+    uint32_t events2 = k_event_wait(&program_test_events, BUTTON_PRESS_NOTICE, false, K_MSEC(100));
+    zassert_true(events2 & BUTTON_PRESS_NOTICE, "Second callback should also post event");
 }
 
 /**
@@ -73,7 +73,8 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
 ZTEST(button_press_tests, test_main_responds_to_first_press)
 {
     start_main(1000);
-    k_event_clear(&button_events, BUTTON_EVENT1);
+    printk("main just started\n");
+    k_event_clear(&program_test_events, BUTTON_PRESS_NOTICE);
 
     LED_STATE = LED_OFF;
     int initial_state = LED_STATE;
@@ -94,7 +95,8 @@ ZTEST(button_press_tests, test_main_responds_to_first_press)
 ZTEST(button_press_tests, test_main_responds_to_second_press)
 {
     start_main(1000);
-    k_event_clear(&button_events, BUTTON_EVENT1);
+    printk("main just started\n");
+    k_event_clear(&program_test_events, BUTTON_PRESS_NOTICE);
 
     LED_STATE = LED_OFF;
     

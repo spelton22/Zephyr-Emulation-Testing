@@ -17,7 +17,7 @@ int LED_STATE = LED_OFF;
 
 K_EVENT_DEFINE(button_events);
 #define BUTTON_EVENT1 BIT(0)
-#define BUTTON_EVENT2 BIT(1)
+// #define BUTTON_EVENT2 BIT(1)
 
 const struct gpio_dt_spec led_test = GPIO_DT_SPEC_GET(DT_ALIAS(ledtest), gpios);
 const struct gpio_dt_spec button_test = GPIO_DT_SPEC_GET(DT_ALIAS(buttontest), gpios);
@@ -86,5 +86,6 @@ int main(void)
 void button_test_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
   k_event_post(&button_events, BUTTON_EVENT1);
+  BUTTON_PRESS();
   printk("button pressed in call back\n");
 }

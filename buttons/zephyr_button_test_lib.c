@@ -4,6 +4,8 @@
 #include <zephyr/ztest.h>
 #include <zephyr/kernel.h>
 
+K_EVENT_DEFINE(program_test_events);
+
 void before(void *)
 {
     stop_main();
