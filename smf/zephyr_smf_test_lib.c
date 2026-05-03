@@ -206,10 +206,8 @@ void assert_led_duty_cycle(const struct gpio_dt_spec *led,
     );
 }
 
-extern struct app_ctx s_ctx;
-
-void assert_state(const struct smf_state *expected)
+void assert_state(const struct smf_state *expected, const struct duty_ctx *given_ctx)
 {
-    const struct smf_state *current = s_ctx.ctx.current;
+    const struct smf_state *current = given_ctx->current;
     zassert_equal_ptr(current, expected, "Unexpected state");
 }
