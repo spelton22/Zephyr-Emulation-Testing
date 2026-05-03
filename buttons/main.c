@@ -6,6 +6,7 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h> 
 #include <zephyr/logging/log.h>
+#include "zephyr_button_test_lib.h"
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
