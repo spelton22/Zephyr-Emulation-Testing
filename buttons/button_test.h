@@ -4,6 +4,8 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
+#include "zephyr_button_test_lib.h"
+
 extern struct k_event button_events;
 extern int LED_STATE;
 
