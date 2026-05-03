@@ -16,6 +16,7 @@
 ZTEST(button_press_tests, test_callback_posts_event)
 {
     start_main(1000);
+    printk("main just started\n");
     k_event_clear(&button_events, BUTTON_EVENT1);
 
     k_thread_suspend(student_main_tid);
@@ -39,6 +40,7 @@ ZTEST(button_press_tests, test_callback_posts_event)
 ZTEST(button_press_tests, test_callback_multiple_calls)
 {
     start_main(1000);
+    printk("main just started\n");
     k_event_clear(&button_events, BUTTON_EVENT1);
     k_msleep(1000);
 
