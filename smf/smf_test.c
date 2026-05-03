@@ -9,7 +9,7 @@
 /*  IDLE state behavior                                         */
 /* ------------------------------------------------------------ */
 
-ZTEST(app_test, test_initial_state_idle)
+ZTEST(smf_tests, test_initial_state_idle)
 {
     start_main(1000);
 
@@ -23,7 +23,7 @@ ZTEST(app_test, test_initial_state_idle)
 /*  Button → BLINK_LEFT transition                              */
 /* ------------------------------------------------------------ */
 
-ZTEST(app_test, test_left_button_enters_blink_left)
+ZTEST(smf_tests, test_left_button_enters_blink_left)
 {
     start_main(1000);
 
@@ -46,7 +46,7 @@ ZTEST(app_test, test_left_button_enters_blink_left)
 /*  Button → BLINK_RIGHT transition                             */
 /* ------------------------------------------------------------ */
 
-ZTEST(app_test, test_right_button_enters_blink_right)
+ZTEST(smf_tests, test_right_button_enters_blink_right)
 {
     start_main(1000);
 
@@ -69,7 +69,7 @@ ZTEST(app_test, test_right_button_enters_blink_right)
 /*  STOP button returns to IDLE                                 */
 /* ------------------------------------------------------------ */
 
-ZTEST(app_test, test_stop_returns_to_idle_from_left)
+ZTEST(smf_tests, test_stop_returns_to_idle_from_left)
 {
     start_main(1000);
 
@@ -86,7 +86,7 @@ ZTEST(app_test, test_stop_returns_to_idle_from_left)
     assert_led_off(&led_right, "right");
 }
 
-ZTEST(app_test, test_stop_returns_to_idle_from_right)
+ZTEST(smf_tests, test_stop_returns_to_idle_from_right)
 {
     start_main(1000);
 
@@ -107,7 +107,7 @@ ZTEST(app_test, test_stop_returns_to_idle_from_right)
 /*  LEFT ↔ RIGHT switching                                      */
 /* ------------------------------------------------------------ */
 
-ZTEST(app_test, test_left_to_right_transition)
+ZTEST(smf_tests, test_left_to_right_transition)
 {
     start_main(1000);
 
