@@ -25,7 +25,7 @@ void simulate_button_click(const struct gpio_dt_spec *button);
 bool wait_for_event(uint32_t mask, int timeout_ms);
 
 
-
+#endif // ZEPHYR_BUTTON_TEST_H
 
 
 // extern struct k_thread student_main_thread;

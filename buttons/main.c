@@ -29,7 +29,7 @@ int first_event;
 
 int init(){
 
-  k_event_init(&button_events);
+  // k_event_init(&button_events);
   first_event = 1;
 
   if (!device_is_ready(button_test.port)) {

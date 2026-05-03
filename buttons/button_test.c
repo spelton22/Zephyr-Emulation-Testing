@@ -34,13 +34,13 @@ ZTEST(button_press_tests, test_callback_posts_event)
     k_event_clear(&button_events, BUTTON_EVENT1 | BUTTON_EVENT2);
     start_main(1000);
     
-    uint32_t events_before = k_event_wait(&button_events, BUTTON_EVENT1, false, K_NO_WAIT);
+    uint32_t events_before = k_event_wait(&button_events, BUTTON_EVENT1, false, K_MSEC(100));
     zassert_false(events_before & BUTTON_EVENT1, "BUTTON_EVENT should not be set initially");
 
     simulate_button_click(&button_test);
     k_msleep(50);
 
-    uint32_t events_after = k_event_wait(&button_events, BUTTON_EVENT2, false, K_NO_WAIT);
+    uint32_t events_after = k_event_wait(&button_events, BUTTON_EVENT2, false, K_MSEC(100));
     zassert_true(events_after & BUTTON_EVENT2, "Callback should post BUTTON_EVENT");
 }
 
@@ -56,16 +56,16 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
     simulate_button_click(&button_test);
     k_msleep(50);
     
-    // uint32_t events1 = k_event_wait(&button_events, BUTTON_EVENT1, false, K_NO_WAIT);
-    // zassert_true(events1 & BUTTON_EVENT1, "First callback should post event");
+    uint32_t events1 = k_event_wait(&button_events, BUTTON_EVENT1, false, K_MSEC(100));
+    zassert_true(events1 & BUTTON_EVENT1, "First callback should post event");
 
-    zassert_true(wait_for_event(BUTTON_EVENT1, 800), "First callback should post event");
+    // zassert_true(wait_for_event(BUTTON_EVENT1, 800), "First callback should post event");
     
     /* Press again */
     simulate_button_click(&button_test);
     k_msleep(50);
     
-    uint32_t events2 = k_event_wait(&button_events, BUTTON_EVENT2, false, K_NO_WAIT);
+    uint32_t events2 = k_event_wait(&button_events, BUTTON_EVENT2, false, K_MSEC(100));
     zassert_true(events2 & BUTTON_EVENT2, "Second callback should also post event");
 }
 
