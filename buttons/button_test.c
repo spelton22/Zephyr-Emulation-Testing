@@ -18,17 +18,18 @@ ZTEST(button_press_tests, test_callback_posts_event)
     start_main(1000);
     k_event_clear(&button_events, BUTTON_EVENT1);
 
+    k_thread_suspend(student_main_tid);
+
     uint32_t events_before = k_event_wait(&button_events, BUTTON_EVENT1, false, K_NO_WAIT);
     zassert_false(events_before & BUTTON_EVENT1, "BUTTON_EVENT should not be set initially");
 
-    printf("before button press\n");
     simulate_button_click(&button_test);
-    printf("after button press\n");
     k_msleep(50);
 
-    // Use consume=true so student_main doesn't also grab it
     uint32_t events_after = k_event_wait(&button_events, BUTTON_EVENT1, true, K_MSEC(100));
     zassert_true(events_after & BUTTON_EVENT1, "Callback should post BUTTON_EVENT");
+
+    k_thread_resume(student_main_tid);
 }
 
 /**
@@ -39,6 +40,7 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
 {
     start_main(1000);
     k_event_clear(&button_events, BUTTON_EVENT1);
+    k_msleep(1000);
 
     printf("before button press\n");
     simulate_button_click(&button_test);
@@ -52,7 +54,7 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
     printf("before button press\n");
     simulate_button_click(&button_test);
     printf("after button press\n");
-    
+
     k_msleep(50);
     uint32_t events2 = k_event_wait(&button_events, BUTTON_EVENT1, true, K_MSEC(100));
     zassert_true(events2 & BUTTON_EVENT1, "Second callback should also post event");
