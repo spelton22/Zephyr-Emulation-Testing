@@ -98,4 +98,5 @@ int main(void)
 void button_test_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
   k_event_post(&button_events, BUTTON_EVENT1);
+  printk("button pressed in call back\n");
 }

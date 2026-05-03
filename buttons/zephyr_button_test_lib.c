@@ -7,7 +7,7 @@
 void before(void *)
 {
     stop_main();
-    start_main(1000);
+    // start_main(1000);
 }
 
 void after(void *)
