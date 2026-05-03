@@ -45,7 +45,7 @@ void assert_led_duty_cycle(const struct gpio_dt_spec *led,
                             int window_ms,
                             int expected_duty,
                             int tolerance);
-void assert_state(const struct smf_state *expected, const struct duty_ctx *given_ctx);
+void assert_state(const struct smf_state *expected, const struct smf_ctx *given_ctx);
 
 struct duty_ctx {
     const struct gpio_dt_spec *led;

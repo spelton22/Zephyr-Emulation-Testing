@@ -13,7 +13,7 @@ ZTEST(app_test, test_initial_state_idle)
 {
     start_main(1000);
 
-    assert_state(&states[IDLE], s_ctx.ctx);
+    assert_state(&states[IDLE], &s_ctx.ctx);
 
     assert_led_off(&led_left, "left");
     assert_led_off(&led_right, "right");
@@ -30,7 +30,7 @@ ZTEST(app_test, test_left_button_enters_blink_left)
     simulate_button_click(&btn_left);
     k_msleep(100);
 
-    assert_state(&states[BLINK_LEFT], s_ctx.ctx);
+    assert_state(&states[BLINK_LEFT], &s_ctx.ctx);
 
     /* Right LED must be off in this state */
     assert_led_off(&led_right, "right");
@@ -53,7 +53,7 @@ ZTEST(app_test, test_right_button_enters_blink_right)
     simulate_button_click(&btn_right);
     k_msleep(100);
 
-    assert_state(&states[BLINK_RIGHT], s_ctx.ctx);
+    assert_state(&states[BLINK_RIGHT], &s_ctx.ctx);
 
     /* Left LED must be off */
     assert_led_off(&led_left, "left");
@@ -75,12 +75,12 @@ ZTEST(app_test, test_stop_returns_to_idle_from_left)
 
     simulate_button_click(&btn_left);
     k_msleep(100);
-    assert_state(&states[BLINK_LEFT], s_ctx.ctx);
+    assert_state(&states[BLINK_LEFT], &s_ctx.ctx);
 
     simulate_button_click(&btn_stop);
     k_msleep(100);
 
-    assert_state(&states[IDLE], s_ctx.ctx);
+    assert_state(&states[IDLE], &s_ctx.ctx);
 
     assert_led_off(&led_left, "left");
     assert_led_off(&led_right, "right");
@@ -92,12 +92,12 @@ ZTEST(app_test, test_stop_returns_to_idle_from_right)
 
     simulate_button_click(&btn_right);
     k_msleep(100);
-    assert_state(&states[BLINK_RIGHT], s_ctx.ctx);
+    assert_state(&states[BLINK_RIGHT], &s_ctx.ctx);
 
     simulate_button_click(&btn_stop);
     k_msleep(100);
 
-    assert_state(&states[IDLE], s_ctx.ctx);
+    assert_state(&states[IDLE], &s_ctx.ctx);
 
     assert_led_off(&led_left, "left");
     assert_led_off(&led_right, "right");
@@ -113,12 +113,12 @@ ZTEST(app_test, test_left_to_right_transition)
 
     simulate_button_click(&btn_left);
     k_msleep(100);
-    assert_state(&states[BLINK_LEFT], s_ctx.ctx);
+    assert_state(&states[BLINK_LEFT], &s_ctx.ctx);
 
     simulate_button_click(&btn_right);
     k_msleep(100);
 
-    assert_state(&states[BLINK_RIGHT], s_ctx.ctx);
+    assert_state(&states[BLINK_RIGHT], &s_ctx.ctx);
 
     /* Ensure left LED stops blinking */
     assert_led_off(&led_left, "left");
