@@ -64,52 +64,28 @@ int init(){
 
 int main(void)
 {
-  int err = init();
+    int err = init();
+    if (err != 0) return -1;
 
-  if(err != 0){
-    return -1;
-  }
-
-  uint32_t events = k_event_wait(&button_events, BUTTON_EVENT1, true, K_FOREVER);
-
-  if (events & BUTTON_EVENT1) {
+    /* First press */
+    k_event_wait(&button_events, BUTTON_EVENT1, true, K_FOREVER);
+    k_event_clear(&button_events, BUTTON_EVENT1);
     LED_STATE = !LED_STATE;
     gpio_pin_set_dt(&led_test, LED_STATE);
+    LOG_INF(LED_STATE ? "Button ON pressed, LED ON" : "Button OFF pressed, LED OFF");
+
+    /* Second press */
+    k_event_wait(&button_events, BUTTON_EVENT1, true, K_FOREVER);
     k_event_clear(&button_events, BUTTON_EVENT1);
-    if(LED_STATE == LED_OFF){
-      LOG_INF("Button OFF pressed, LED OFF\n");
-    } else {
-      LOG_INF("Button ON pressed, LED ON\n");
-    }
-  }
+    LED_STATE = !LED_STATE;
+    gpio_pin_set_dt(&led_test, LED_STATE);
+    LOG_INF(LED_STATE ? "Button ON pressed, LED ON" : "Button OFF pressed, LED OFF");
 
-  uint32_t event_2 = k_event_wait(&button_events, BUTTON_EVENT2, true, K_FOREVER);
-
-  if (event_2 & BUTTON_EVENT2) {
-      LED_STATE = !LED_STATE;
-      gpio_pin_set_dt(&led_test, LED_STATE);
-      k_event_clear(&button_events, BUTTON_EVENT2);
-      if(LED_STATE == LED_OFF){
-        LOG_INF("Button OFF pressed, LED OFF\n");
-      } else {
-        LOG_INF("Button ON pressed, LED ON\n");
-      }
-  }
-
-  LOG_INF("exiting code");
-  return 0;
+    return 0;
 }
 
 
 void button_test_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-  printk("in button callback \n");
-  if (first_event) {
-    k_event_post(&button_events, BUTTON_EVENT1);
-    printk("first event button\n");
-    first_event = 0;
-  } else {
-    k_event_post(&button_events, BUTTON_EVENT2);
-    printk("second button event \n");
-  }
+  k_event_post(&button_events, BUTTON_EVENT1);
 }

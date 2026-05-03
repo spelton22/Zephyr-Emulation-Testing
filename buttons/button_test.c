@@ -32,7 +32,7 @@ bool wait_for_event(uint32_t mask, int timeout_ms)
 ZTEST(button_press_tests, test_callback_posts_event)
 {
     start_main(1000);
-    k_event_clear(&button_events, BUTTON_EVENT1 | BUTTON_EVENT2);
+    k_event_clear(&button_events, BUTTON_EVENT1);
     
     uint32_t events_before = k_event_wait(&button_events, BUTTON_EVENT1, false, K_MSEC(100));
     zassert_false(events_before & BUTTON_EVENT1, "BUTTON_EVENT should not be set initially");
@@ -40,8 +40,8 @@ ZTEST(button_press_tests, test_callback_posts_event)
     simulate_button_click(&button_test);
     k_msleep(50);
 
-    uint32_t events_after = k_event_wait(&button_events, BUTTON_EVENT2, false, K_MSEC(100));
-    zassert_true(events_after & BUTTON_EVENT2, "Callback should post BUTTON_EVENT");
+    uint32_t events_after = k_event_wait(&button_events, BUTTON_EVENT1, false, K_MSEC(100));
+    zassert_true(events_after & BUTTON_EVENT1, "Callback should post BUTTON_EVENT");
 }
 
 /**
@@ -50,26 +50,18 @@ ZTEST(button_press_tests, test_callback_posts_event)
 ZTEST(button_press_tests, test_callback_multiple_calls)
 {
     start_main(1000);
-    k_event_clear(&button_events, BUTTON_EVENT1 | BUTTON_EVENT2);
-    
-    /* First press */
-    printk("button pressed\n");
+    k_event_clear(&button_events, BUTTON_EVENT1);
+
     simulate_button_click(&button_test);
     k_msleep(50);
-    printk("after button pressed\n");
     uint32_t events1 = k_event_wait(&button_events, BUTTON_EVENT1, false, K_MSEC(100));
     zassert_true(events1 & BUTTON_EVENT1, "First callback should post event");
 
-    // zassert_true(wait_for_event(BUTTON_EVENT1, 800), "First callback should post event");
-    
-    /* Press again */
-    printk("button pressed again \n");
+    k_event_clear(&button_events, BUTTON_EVENT1);
     simulate_button_click(&button_test);
     k_msleep(50);
-    printk("after button press 2\n");
-
-    uint32_t events2 = k_event_wait(&button_events, BUTTON_EVENT2, false, K_MSEC(100));
-    zassert_true(events2 & BUTTON_EVENT2, "Second callback should also post event");
+    uint32_t events2 = k_event_wait(&button_events, BUTTON_EVENT1, false, K_MSEC(100));
+    zassert_true(events2 & BUTTON_EVENT1, "Second callback should also post event");
 }
 
 /**
@@ -83,17 +75,12 @@ ZTEST(button_press_tests, test_callback_multiple_calls)
 ZTEST(button_press_tests, test_main_responds_to_first_press)
 {
     start_main(1000);
-    k_event_clear(&button_events, BUTTON_EVENT1 | BUTTON_EVENT2);
+    k_event_clear(&button_events, BUTTON_EVENT1);
 
-    /* Start with LED OFF */
     LED_STATE = LED_OFF;
     int initial_state = LED_STATE;
     
-    zassert_equal(LED_STATE, initial_state, "LED should not change before button press");
-    
-    /* Simulate button press */
     simulate_button_click(&button_test);
-    
     k_msleep(100);
     
     zassert_not_equal(LED_STATE, initial_state,
@@ -109,24 +96,17 @@ ZTEST(button_press_tests, test_main_responds_to_first_press)
 ZTEST(button_press_tests, test_main_responds_to_second_press)
 {
     start_main(1000);
-    k_event_clear(&button_events, BUTTON_EVENT1 | BUTTON_EVENT2);
-    
-    /* Start with LED OFF */
+    k_event_clear(&button_events, BUTTON_EVENT1);
+
     LED_STATE = LED_OFF;
     
-    /* First press - should turn LED ON */
     simulate_button_click(&button_test);
     k_msleep(100);
+    zassert_equal(LED_STATE, LED_ON, "LED should be ON after first press");
     
-    int state_after_first = LED_STATE;
-    zassert_equal(state_after_first, LED_ON, "LED should be ON after first press");
-    
-    /* Second press - should turn LED OFF */
     simulate_button_click(&button_test);
     k_msleep(100);
-    
-    int state_after_second = LED_STATE;
-    zassert_equal(state_after_second, LED_OFF, "LED should be OFF after second press");
+    zassert_equal(LED_STATE, LED_OFF, "LED should be OFF after second press");
 }
 
 ZTEST_SUITE(button_press_tests, NULL, NULL, before, after, NULL);
