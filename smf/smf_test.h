@@ -1,6 +1,10 @@
 #ifndef SMF_TEST_H
 #define SMF_TEST_H
 
+#include <zephyr/kernel.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/smf.h>
+
 /* ------------------------------------------------------------------ */
 /*  Student GPIOs                                                     */
 /* ------------------------------------------------------------------ */
