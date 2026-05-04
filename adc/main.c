@@ -63,6 +63,8 @@ LOG_MODULE_REGISTER(adc_app, LOG_LEVEL_DBG);
     ADC_CHANNEL_CFG_FROM_DT_NODE(DT_ALIAS(alias))                      \
 }
 
+int timer_error = 0;
+
 /* ─────────────────────────────────────────────────────────────────── */
 /*  Hardware structs  (GPIOs defined here; declared extern in the .h)  */
 /* ─────────────────────────────────────────────────────────────────── */
@@ -501,7 +503,7 @@ static void state_error_exit(void *o)
 int main(void)
 {
     smf_set_initial(SMF_CTX(&s_ctx), &states[INIT]);
-    
+
     while (1) {
         if (timer_error < 0) {
             return timer_error;

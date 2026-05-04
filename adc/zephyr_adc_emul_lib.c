@@ -15,12 +15,23 @@ float student_mapped_freq;
 /* ─────────────────────────────────────────────────────────────────── */
 /*  Internal state                                                     */
 /* ─────────────────────────────────────────────────────────────────── */
-static const struct device *adc_emul_dev;
+const struct device *adc_emul_dev;
 
-K_THREAD_STACK_DEFINE(s_student_stack, STUDENT_MAIN_STACK_SIZE);
-static struct k_thread  s_student_thread;
-static k_tid_t          s_student_tid;
-static volatile bool    s_student_running;
+K_THREAD_STACK_DEFINE(student_main_stack, STUDENT_MAIN_STACK_SIZE);
+struct k_thread  student_main_thread;
+k_tid_t          student_main_tid;
+volatile bool    main_running = false;
+
+static volatile int g_led_toggles;
+
+struct duty_ctx {
+    const struct gpio_dt_spec *led;
+    int64_t last_ts;
+    int64_t on_time;
+    int64_t total_time;
+    int     last_state;
+};
+static struct duty_ctx ctx;
 
 static void before(void *)
 {
@@ -37,8 +48,7 @@ static void before(void *)
 
     k_event_clear(&program_test_events,
         ADC_READ_TRIGGERED_NOTICE | ADC_READ_COMPLETE_NOTICE |
-        ADC_BLINK_DONE_NOTICE |
-        ADC_SAMPLE_TRIGGERED_NOTICE | ADC_SAMPLE_COMPLETE_NOTICE);
+        ADC_BLINK_DONE_NOTICE);
 }
 
 static void after(void *)
