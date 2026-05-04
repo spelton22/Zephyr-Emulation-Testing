@@ -19,6 +19,8 @@
 #define ADC_READ_COMPLETE_NOTICE    BIT(8)
 #define ADC_BLINK_DONE_NOTICE       BIT(9)
 #define RESET_TEST_NOTICE   BIT(10)
+#define STUDENT_MAIN_STACK_SIZE  4096
+#define STUDENT_MAIN_PRIORITY    5
 
 /* Kernel event object shared between application and test code. */
 extern struct k_event program_test_events;
@@ -104,11 +106,6 @@ extern const struct gpio_dt_spec error_led;
 /* ─────────────────────────────────────────────────────────────────── */
 extern int student_main(void);
 
-/* ─────────────────────────────────────────────────────────────────── */
-/*  Test-thread configuration                                          */
-/* ─────────────────────────────────────────────────────────────────── */
-#define STUDENT_MAIN_STACK_SIZE  4096
-#define STUDENT_MAIN_PRIORITY    5
 
 /* ─────────────────────────────────────────────────────────────────── */
 /*  Public test-helper API                                             */
