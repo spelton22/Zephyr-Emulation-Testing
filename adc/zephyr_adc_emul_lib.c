@@ -4,42 +4,51 @@
 #include <zephyr/drivers/adc/adc_emul.h>
 #include <zephyr/ztest.h>
 
-/* ─────────────────────────────────────────────────────────────────── */
-/*  Kernel objects defined here; declared extern in the .h            */
-/* ─────────────────────────────────────────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/*  Kernel objects — declared extern in .h, defined here              */
+/* ------------------------------------------------------------------ */
 K_EVENT_DEFINE(program_test_events);
 
-int   student_adc_mv;
-float student_mapped_freq;
+int   student_adc_mv          = 0;
+float student_mapped_freq     = 0.0f;
+int   student_calc_cycles_result = 0;
+int   student_frequency       = 0;
 
-/* ─────────────────────────────────────────────────────────────────── */
-/*  Internal state                                                     */
-/* ─────────────────────────────────────────────────────────────────── */
 const struct device *adc_emul_dev;
 
+/* ------------------------------------------------------------------ */
+/*  Thread state                                                       */
+/* ------------------------------------------------------------------ */
 K_THREAD_STACK_DEFINE(student_main_stack, STUDENT_MAIN_STACK_SIZE);
-struct k_thread  student_main_thread;
-k_tid_t          student_main_tid;
-volatile bool    main_running = false;
+struct k_thread student_main_thread;
+k_tid_t         student_main_tid;
+volatile bool   main_running = false;
 
-static volatile int g_led_toggles;
+/* ------------------------------------------------------------------ */
+/*  Internal state for LED measurement helpers                        */
+/* ------------------------------------------------------------------ */
+static volatile int g_led_toggles = 0;
 
 struct duty_ctx {
     const struct gpio_dt_spec *led;
     int64_t last_ts;
+    bool    last_state;
     int64_t on_time;
     int64_t total_time;
-    int     last_state;
 };
 static struct duty_ctx ctx;
 
-static void before(void *)
+/* ------------------------------------------------------------------ */
+/*  Fixture                                                            */
+/* ------------------------------------------------------------------ */
+void before(void *)
 {
     stop_main();
 
     gpio_emul_input_set(read_button.port,  read_button.pin,  0);
     gpio_emul_input_set(sleep_button.port, sleep_button.pin, 0);
     gpio_emul_input_set(reset_button.port, reset_button.pin, 0);
+    k_msleep(50);
 
     adc_emul_dev = DEVICE_DT_GET(ADC_EMUL_NODE);
     zassert_true(device_is_ready(adc_emul_dev), "ADC emulator not ready");
@@ -48,33 +57,36 @@ static void before(void *)
 
     k_event_clear(&program_test_events,
         ADC_READ_TRIGGERED_NOTICE | ADC_READ_COMPLETE_NOTICE |
-        ADC_BLINK_DONE_NOTICE);
+        ADC_BLINK_DONE_NOTICE     |
+        ADC_SAMPLE_TRIGGERED_NOTICE | ADC_SAMPLE_COMPLETE_NOTICE);
 }
 
-static void after(void *)
+void after(void *)
 {
     stop_main();
     k_msleep(50);
 }
 
-static void student_main_entry(void *, void *, void *)
+/* ------------------------------------------------------------------ */
+/*  Thread helpers                                                     */
+/* ------------------------------------------------------------------ */
+void student_main_entry(void *, void *, void *)
 {
     main_running = true;
     student_main();
     main_running = false;
 }
 
-static void stop_main(void)
+void stop_main(void)
 {
     if (main_running) {
-        simulate_button_click(&reset_button);
         k_thread_abort(student_main_tid);
         k_msleep(20);
         main_running = false;
     }
 }
 
-static void start_main(int settle_ms)
+void start_main(int settle_ms)
 {
     student_main_tid = k_thread_create(
         &student_main_thread,
@@ -87,9 +99,12 @@ static void start_main(int settle_ms)
     k_msleep(settle_ms);
 }
 
-static bool wait_for_event(uint32_t mask, int timeout_ms)
+/* ------------------------------------------------------------------ */
+/*  Event helpers                                                      */
+/* ------------------------------------------------------------------ */
+bool wait_for_event(uint32_t mask, int timeout_ms)
 {
-    int64_t start = k_uptime_get();
+    int64_t  start = k_uptime_get();
     uint32_t events = 0;
 
     do {
@@ -102,18 +117,62 @@ static bool wait_for_event(uint32_t mask, int timeout_ms)
     return false;
 }
 
-static void led_edge_callback(const struct device *dev,
-                              struct gpio_callback *cb,
-                              uint32_t pins)
+/* ------------------------------------------------------------------ */
+/*  Button helper                                                      */
+/* ------------------------------------------------------------------ */
+void simulate_button_click(const struct gpio_dt_spec *button)
 {
+    gpio_emul_input_set(button->port, button->pin, 1);
+    k_sleep(K_MSEC(5));
+    gpio_emul_input_set(button->port, button->pin, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/*  LED state helpers                                                  */
+/* ------------------------------------------------------------------ */
+void assert_led_off(const struct gpio_dt_spec *led, const char *led_name)
+{
+    int val = gpio_emul_output_get(led->port, led->pin);
+    zassert_equal(val, 0,
+        "Expected LED %s (pin %d) to be OFF but it is ON",
+        led_name, led->pin);
+}
+
+void assert_led_on(const struct gpio_dt_spec *led, const char *led_name)
+{
+    int val = gpio_emul_output_get(led->port, led->pin);
+    zassert_equal(val, 1,
+        "Expected LED %s (pin %d) to be ON but it is OFF",
+        led_name, led->pin);
+}
+
+/* ------------------------------------------------------------------ */
+/*  ADC emulator helper                                                */
+/* ------------------------------------------------------------------ */
+void set_ain0_mv(const struct device *dev, int millivolts)
+{
+    int ret = adc_emul_const_value_set(dev, AIN0_CHANNEL_ID, millivolts);
+    zassert_ok(ret, "adc_emul_const_value_set failed (%d)", ret);
+}
+
+/* ------------------------------------------------------------------ */
+/*  LED frequency measurement                                          */
+/* ------------------------------------------------------------------ */
+static void led_edge_callback(const struct device *dev,
+                               struct gpio_callback *cb,
+                               uint32_t pins)
+{
+    ARG_UNUSED(dev);
+    ARG_UNUSED(cb);
+    ARG_UNUSED(pins);
     g_led_toggles++;
 }
 
-static void assert_led_blink_freq(const struct gpio_dt_spec *led,
-                                  int window_ms,
-                                  int expected_hz,
-                                  int tolerance_hz,
-                                  const char *led_name)
+void assert_led_blink_freq(const struct gpio_dt_spec *led,
+                            int window_ms,
+                            int expected_hz,
+                            int tolerance_hz,
+                            const char *led_name)
 {
     g_led_toggles = 0;
 
@@ -128,9 +187,7 @@ static void assert_led_blink_freq(const struct gpio_dt_spec *led,
 
     k_msleep(window_ms);
 
-    ret = gpio_pin_interrupt_configure_dt(led, GPIO_INT_DISABLE);
-    zassert_true(ret == 0, "LED %s: failed to disable interrupt", led_name);
-
+    gpio_pin_interrupt_configure_dt(led, GPIO_INT_DISABLE);
     gpio_remove_callback_dt(led, &cb);
 
     int measured_hz = (g_led_toggles * 500) / window_ms;
@@ -140,72 +197,44 @@ static void assert_led_blink_freq(const struct gpio_dt_spec *led,
         led_name, expected_hz, measured_hz, g_led_toggles, window_ms);
 }
 
-static void simulate_button_click(const struct gpio_dt_spec *button)
-{
-    gpio_emul_input_set(button->port, button->pin, 1);
-    k_sleep(K_MSEC(5));
-    gpio_emul_input_set(button->port, button->pin, 0);
-}
-
-static void assert_led_off(const struct gpio_dt_spec *led, const char *led_name)
-{
-    int val = gpio_emul_output_get(led->port, led->pin);
-    zassert_equal(val, 0,
-        "Expected LED %s on pin %d to be OFF, but it is ON",
-        led_name, led->pin);
-}
-
-static void assert_led_on(const struct gpio_dt_spec *led, const char *led_name)
-{
-    int val = gpio_emul_output_get(led->port, led->pin);
-    zassert_equal(val, 1,
-        "Expected LED %s on pin %d to be ON, but it is OFF",
-        led_name, led->pin);
-}
-
-static void set_ain0_mv(const struct device *dev, int millivolts)
-{
-    int ret = adc_emul_const_value_set(dev, AIN0_CHANNEL_ID, millivolts);
-
-    zassert_ok(ret, "adc_emul_value_func_set failed (%d)", ret);
-}
-
+/* ------------------------------------------------------------------ */
+/*  LED duty cycle measurement                                         */
+/* ------------------------------------------------------------------ */
 static void led_edge_duty_callback(const struct device *dev,
-                              struct gpio_callback *cb,
-                              uint32_t pins)
+                                    struct gpio_callback *cb,
+                                    uint32_t pins)
 {
-    int64_t now = k_uptime_get();
+    ARG_UNUSED(dev);
+    ARG_UNUSED(cb);
+    ARG_UNUSED(pins);
+
+    int64_t now   = k_uptime_get();
     int64_t delta = now - ctx.last_ts;
 
     if (ctx.last_state) {
         ctx.on_time += delta;
     }
     ctx.total_time += delta;
-
     ctx.last_state = !ctx.last_state;
-    ctx.last_ts = now;
+    ctx.last_ts    = now;
 }
 
-static void assert_blink_ontime_pct(int window_ms,
-                                  int expected_duty,
-                                  int tolerance)
+void assert_blink_ontime_pct(int window_ms, int expected_duty, int tolerance)
 {
-    struct gpio_dt_spec *led = &blinker_led;
-    char *name = "blinker";
-    
+    const struct gpio_dt_spec *led = &blinker_led;
+    const char *name = "blinker";
+
     struct gpio_callback cb;
 
-    ctx.led = led;
-    ctx.on_time = 0;
+    ctx.on_time    = 0;
     ctx.total_time = 0;
-
     ctx.last_state = gpio_emul_output_get(led->port, led->pin);
-    ctx.last_ts = k_uptime_get();
+    ctx.last_ts    = k_uptime_get();
 
     gpio_init_callback(&cb, led_edge_duty_callback, BIT(led->pin));
 
     int ret = gpio_add_callback_dt(led, &cb);
-    zassert_true(ret == 0, "LED %s: callback add failed", "name");
+    zassert_true(ret == 0, "LED %s: callback add failed", name);
 
     ret = gpio_pin_interrupt_configure_dt(led, GPIO_INT_EDGE_BOTH);
     zassert_true(ret == 0, "LED %s: interrupt config failed", name);
@@ -215,33 +244,30 @@ static void assert_blink_ontime_pct(int window_ms,
     gpio_pin_interrupt_configure_dt(led, GPIO_INT_DISABLE);
     gpio_remove_callback_dt(led, &cb);
 
-    zassert_true(ctx.total_time > 0,
-        "LED %s: no activity detected", name);
+    zassert_true(ctx.total_time > 0, "LED %s: no activity detected", name);
 
-    float measured_duty = (float)ctx.on_time / (float)ctx.total_time;
-    measured_duty = measured_duty * 100;
+    float measured_duty = ((float)ctx.on_time / (float)ctx.total_time) * 100.0f;
 
     zassert_true(
         measured_duty > (expected_duty - tolerance) &&
         measured_duty < (expected_duty + tolerance),
-        "LED %s: duty %.2f (expected %.2f ± %.2f)",
-        name,
-        (double)measured_duty,
-        (double)expected_duty,
-        (double)tolerance
-    );
+        "LED %s: duty %.2f%% (expected %d%% ± %d%%)",
+        name, (double)measured_duty, expected_duty, tolerance);
 }
 
-static void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
+/* ------------------------------------------------------------------ */
+/*  Blink total duration measurement                                   */
+/* ------------------------------------------------------------------ */
+void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
 {
-    /* Record first toggle */
     g_led_toggles = 0;
+
     struct gpio_callback cb;
     gpio_init_callback(&cb, led_edge_callback, BIT(blinker_led.pin));
     gpio_add_callback_dt(&blinker_led, &cb);
     gpio_pin_interrupt_configure_dt(&blinker_led, GPIO_INT_EDGE_BOTH);
 
-    /* Wait for first edge to appear */
+    /* Wait for first edge */
     int64_t t_wait = k_uptime_get();
     while (g_led_toggles == 0 && (k_uptime_get() - t_wait) < 500) {
         k_msleep(5);
@@ -251,9 +277,9 @@ static void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
     gpio_pin_interrupt_configure_dt(&blinker_led, GPIO_INT_DISABLE);
     gpio_remove_callback_dt(&blinker_led, &cb);
 
-    zassert_true(g_led_toggles > 0, "blinker never toggled, can't measure duration");
+    zassert_true(g_led_toggles > 0,
+        "blinker never toggled, can't measure duration");
 
-    /* Now wait for the blink-complete notice */
     uint32_t events = k_event_wait(&program_test_events,
                                    ADC_BLINK_DONE_NOTICE,
                                    true,
@@ -264,6 +290,6 @@ static void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
     int64_t measured_ms = k_uptime_get() - t_start;
 
     zassert_within((int)measured_ms, expected_ms, tolerance_ms,
-        "blink duration: expected ~%d ms but measured ~%d ms",
-        expected_ms, (int)measured_ms);
+        "blink duration: expected ~%d ms but measured ~%lld ms",
+        expected_ms, measured_ms);
 }
