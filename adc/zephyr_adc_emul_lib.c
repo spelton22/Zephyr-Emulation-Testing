@@ -200,7 +200,7 @@ void assert_led_blink_freq(const struct gpio_dt_spec *led,
 /* ------------------------------------------------------------------ */
 /*  LED duty cycle measurement                                         */
 /* ------------------------------------------------------------------ */
-static void led_edge_duty_callback(const struct device *dev,
+void led_edge_duty_callback(const struct device *dev,
                               struct gpio_callback *cb,
                               uint32_t pins)
 {
@@ -220,7 +220,7 @@ static void led_edge_duty_callback(const struct device *dev,
     ctx.last_ts = now;
 }
 
-static void assert_blink_ontime_pct(int window_ms,
+void assert_blink_ontime_pct(int window_ms,
                                   int expected_duty,
                                   int tolerance)
 {
@@ -268,7 +268,7 @@ static void assert_blink_ontime_pct(int window_ms,
  * Waits up to (expected_ms + tolerance_ms + 500) ms for ADC_BLINK_DONE_NOTICE.
  * Records first-edge and done-notice timestamps.
  */
-static void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
+void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
 {
     /* Record first toggle */
     g_led_toggles = 0;
