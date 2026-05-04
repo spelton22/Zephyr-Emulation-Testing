@@ -201,40 +201,45 @@ void assert_led_blink_freq(const struct gpio_dt_spec *led,
 /*  LED duty cycle measurement                                         */
 /* ------------------------------------------------------------------ */
 static void led_edge_duty_callback(const struct device *dev,
-                                    struct gpio_callback *cb,
-                                    uint32_t pins)
+                              struct gpio_callback *cb,
+                              uint32_t pins)
 {
     ARG_UNUSED(dev);
     ARG_UNUSED(cb);
     ARG_UNUSED(pins);
 
-    int64_t now   = k_uptime_get();
+    int64_t now = k_uptime_get();
     int64_t delta = now - ctx.last_ts;
 
     if (ctx.last_state) {
         ctx.on_time += delta;
     }
     ctx.total_time += delta;
+
     ctx.last_state = !ctx.last_state;
-    ctx.last_ts    = now;
+    ctx.last_ts = now;
 }
 
-void assert_blink_ontime_pct(int window_ms, int expected_duty, int tolerance)
+static void assert_blink_ontime_pct(int window_ms,
+                                  int expected_duty,
+                                  int tolerance)
 {
-    const struct gpio_dt_spec *led = &blinker_led;
-    const char *name = "blinker";
-
+    struct gpio_dt_spec *led = &blinker_led;
+    char *name = "blinker";
+    
     struct gpio_callback cb;
 
-    ctx.on_time    = 0;
+    // ctx.led = led;
+    ctx.on_time = 0;
     ctx.total_time = 0;
+
     ctx.last_state = gpio_emul_output_get(led->port, led->pin);
-    ctx.last_ts    = k_uptime_get();
+    ctx.last_ts = k_uptime_get();
 
     gpio_init_callback(&cb, led_edge_duty_callback, BIT(led->pin));
 
     int ret = gpio_add_callback_dt(led, &cb);
-    zassert_true(ret == 0, "LED %s: callback add failed", name);
+    zassert_true(ret == 0, "LED %s: callback add failed", "name");
 
     ret = gpio_pin_interrupt_configure_dt(led, GPIO_INT_EDGE_BOTH);
     zassert_true(ret == 0, "LED %s: interrupt config failed", name);
@@ -244,7 +249,8 @@ void assert_blink_ontime_pct(int window_ms, int expected_duty, int tolerance)
     gpio_pin_interrupt_configure_dt(led, GPIO_INT_DISABLE);
     gpio_remove_callback_dt(led, &cb);
 
-    zassert_true(ctx.total_time > 0, "LED %s: no activity detected", name);
+    zassert_true(ctx.total_time > 0,
+        "LED %s: no activity detected", name);
 
     float measured_duty = ((float)ctx.on_time / (float)ctx.total_time) * 100.0f;
 
@@ -255,11 +261,16 @@ void assert_blink_ontime_pct(int window_ms, int expected_duty, int tolerance)
         name, (double)measured_duty, expected_duty, tolerance);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Blink total duration measurement                                   */
-/* ------------------------------------------------------------------ */
-void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
+/*
+ * assert_blink_total_duration_ms — measure how long blinker_led
+ * remains active (first edge to last edge) against the 5s spec.
+ *
+ * Waits up to (expected_ms + tolerance_ms + 500) ms for ADC_BLINK_DONE_NOTICE.
+ * Records first-edge and done-notice timestamps.
+ */
+static void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
 {
+    /* Record first toggle */
     g_led_toggles = 0;
 
     struct gpio_callback cb;
@@ -267,7 +278,7 @@ void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
     gpio_add_callback_dt(&blinker_led, &cb);
     gpio_pin_interrupt_configure_dt(&blinker_led, GPIO_INT_EDGE_BOTH);
 
-    /* Wait for first edge */
+    /* Wait for first edge to appear */
     int64_t t_wait = k_uptime_get();
     while (g_led_toggles == 0 && (k_uptime_get() - t_wait) < 500) {
         k_msleep(5);
@@ -277,9 +288,9 @@ void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
     gpio_pin_interrupt_configure_dt(&blinker_led, GPIO_INT_DISABLE);
     gpio_remove_callback_dt(&blinker_led, &cb);
 
-    zassert_true(g_led_toggles > 0,
-        "blinker never toggled, can't measure duration");
+    zassert_true(g_led_toggles > 0, "blinker never toggled, can't measure duration");
 
+    /* Now wait for the blink-complete notice */
     uint32_t events = k_event_wait(&program_test_events,
                                    ADC_BLINK_DONE_NOTICE,
                                    true,
@@ -290,6 +301,6 @@ void assert_blink_total_duration_ms(int expected_ms, int tolerance_ms)
     int64_t measured_ms = k_uptime_get() - t_start;
 
     zassert_within((int)measured_ms, expected_ms, tolerance_ms,
-        "blink duration: expected ~%d ms but measured ~%lld ms",
-        expected_ms, measured_ms);
+        "blink duration: expected ~%d ms but measured ~%d ms",
+        expected_ms, (int)measured_ms);
 }
