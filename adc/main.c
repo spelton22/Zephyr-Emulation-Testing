@@ -366,10 +366,10 @@ static void reading_exit(void *o)
 
 static void blinking_entry(void *o)
 {
-    gpio_pin_set_dt(&blinker_led, 1);
+    gpio_pin_set_dt(&blinker_led, 0);          // LED starts OFF
     gpio_pin_interrupt_configure_dt(&read_button, GPIO_INT_DISABLE);
 
-    k_timer_start(&led_on_timer,    K_MSEC(s_context.ontime),  K_NO_WAIT);
+    k_timer_start(&led_off_timer,   K_MSEC(s_context.offtime), K_NO_WAIT);  // wait off-time, then turn ON
     k_timer_start(&blinking_timer,  K_MSEC(BLINKING_TIME_MS),  K_NO_WAIT);
 
     s_context.starttime = k_uptime_get();
