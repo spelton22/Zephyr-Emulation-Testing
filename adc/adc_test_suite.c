@@ -92,13 +92,15 @@ ZTEST(adc_single_sample_tests, test_p1_05_duty_cycle_10pct)
     zassert_true(wait_for_event(ADC_READ_COMPLETE_NOTICE, 800),
         "ADC_READ_COMPLETE_NOTICE never fired");
 
-   int64_t t = k_uptime_get();
-    while (gpio_emul_output_get(blinker_led.port, blinker_led.pin) == 0 &&
-        (k_uptime_get() - t) < 500) {
-        k_msleep(1);
-    }
+    assert_blink_ontime_pct(2000, 10, 5);  /* ±5% tolerance */
 
-    assert_blink_ontime_pct(2000, 10, 5);
+//    int64_t t = k_uptime_get();
+//     while (gpio_emul_output_get(blinker_led.port, blinker_led.pin) == 0 &&
+//         (k_uptime_get() - t) < 500) {
+//         k_msleep(1);
+//     }
+
+    // assert_blink_ontime_pct(2000, 10, 5);
 }
 
 /*
