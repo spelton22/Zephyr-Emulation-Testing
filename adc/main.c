@@ -366,12 +366,25 @@ static void reading_exit(void *o)
 
 static void blinking_entry(void *o)
 {
-    gpio_pin_set_dt(&blinker_led, 0);          // LED starts OFF
+    int err;
+    
+    /* TURN ON LED */
+    err =  gpio_pin_set_dt(&blinker_led, 1);
+    if (err < 0) {
+        LOG_ERR("Failed to set blinker LED.");
+        smf_set_terminate(SMF_CTX(&s_context), err);
+    }
+
     gpio_pin_interrupt_configure_dt(&read_button, GPIO_INT_DISABLE);
-
-    k_timer_start(&led_off_timer,   K_MSEC(s_context.offtime), K_NO_WAIT);  // wait off-time, then turn ON
-    k_timer_start(&blinking_timer,  K_MSEC(BLINKING_TIME_MS),  K_NO_WAIT);
-
+    
+    /* START TIMERS */
+    k_timer_start(&led_on_timer,
+                  K_MSEC(s_context.ontime),
+                  K_NO_WAIT);
+    k_timer_start(&blinking_timer,
+                  K_MSEC(BLINKING_TIME_MS),
+                  K_NO_WAIT);
+    
     s_context.starttime = k_uptime_get();
 }
 
@@ -382,9 +395,11 @@ static void blinking_run(void *o)
                                    true, K_FOREVER);
     if (events & TIMER_COMPLETE_EVENT) {
         smf_set_state(SMF_CTX(&s_context), &states[IDLE]);
-    } else if (events & SLEEP_EVENT) {
+    } 
+    if (events & SLEEP_EVENT) {
         smf_set_state(SMF_CTX(&s_context), &states[SLEEP]);
-    } else if (events & RESET_EVENT) {
+    } 
+    if (events & RESET_EVENT) {
         smf_set_state(SMF_CTX(&s_context), &states[RESET]);
     }
 }
@@ -394,6 +409,7 @@ static void blinking_exit(void *o)
     k_timer_stop(&blinking_timer);
     k_timer_stop(&led_on_timer);
     k_timer_stop(&led_off_timer);
+
     gpio_pin_set_dt(&blinker_led, 0);
     gpio_pin_interrupt_configure_dt(&read_button, GPIO_INT_EDGE_TO_ACTIVE);
 

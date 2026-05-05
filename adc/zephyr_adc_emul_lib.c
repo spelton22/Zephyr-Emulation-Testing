@@ -221,15 +221,15 @@ void led_edge_duty_callback(const struct device *dev,
 }
 
 void assert_blink_ontime_pct(int window_ms,
-                                  int expected_duty,
-                                  int tolerance)
+                              int expected_duty,
+                              int tolerance)
 {
-    struct gpio_dt_spec *led = &blinker_led;
-    char *name = "blinker";
-    
+    const struct gpio_dt_spec *led = &blinker_led;
+    const char *name = "blinker";
+
     struct gpio_callback cb;
 
-    // ctx.led = led;
+    ctx.led = led;
     ctx.on_time = 0;
     ctx.total_time = 0;
 
@@ -239,7 +239,7 @@ void assert_blink_ontime_pct(int window_ms,
     gpio_init_callback(&cb, led_edge_duty_callback, BIT(led->pin));
 
     int ret = gpio_add_callback_dt(led, &cb);
-    zassert_true(ret == 0, "LED %s: callback add failed", "name");
+    zassert_true(ret == 0, "LED %s: callback add failed", name);  // was "name" (string literal)
 
     ret = gpio_pin_interrupt_configure_dt(led, GPIO_INT_EDGE_BOTH);
     zassert_true(ret == 0, "LED %s: interrupt config failed", name);
@@ -250,15 +250,20 @@ void assert_blink_ontime_pct(int window_ms,
     gpio_remove_callback_dt(led, &cb);
 
     zassert_true(ctx.total_time > 0,
-        "LED %s: no activity detected", name);
+        "LED %s: no activity detected", name);    
 
-    float measured_duty = ((float)ctx.on_time / (float)ctx.total_time) * 100.0f;
+    float measured_duty = (float)ctx.on_time / (float)ctx.total_time;
+    measured_duty = measured_duty * 100;
 
     zassert_true(
         measured_duty > (expected_duty - tolerance) &&
         measured_duty < (expected_duty + tolerance),
-        "LED %s: duty %.2f%% (expected %d%% ± %d%%)",
-        name, (double)measured_duty, expected_duty, tolerance);
+        "LED %s: duty %.2f (expected %.2f ± %.2f)",
+        name,
+        (double)measured_duty,
+        (double)expected_duty,
+        (double)tolerance
+    );
 }
 
 /*
