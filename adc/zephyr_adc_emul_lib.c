@@ -80,6 +80,7 @@ void student_main_entry(void *, void *, void *)
 void stop_main(void)
 {
     if (main_running) {
+        simulate_button_click(&reset_button);
         k_thread_abort(student_main_tid);
         k_msleep(20);
         main_running = false;
@@ -215,7 +216,6 @@ void led_edge_duty_callback(const struct device *dev,
         ctx.on_time += delta;
     }
     ctx.total_time += delta;
-
     ctx.last_state = !ctx.last_state;
     ctx.last_ts = now;
 }
